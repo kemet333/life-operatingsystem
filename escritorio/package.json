@@ -68,10 +68,10 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-${version}-Windows.${ext}"
+      "artifactName": "${productName}-Windows.${ext}"
     },
     "dmg": {
-      "artifactName": "${productName}-${version}-Mac.${ext}"
+      "artifactName": "${productName}-Mac.${ext}"
     }
   }
 }

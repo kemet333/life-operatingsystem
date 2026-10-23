@@ -31,7 +31,11 @@ CONFIG = json.loads(_config_path().read_text())
 ROOT = Path(os.path.expanduser(CONFIG.get('root') or '~/Equipo'))
 STATE = ROOT / 'state'
 LANE = 'equipo-constructor'          # not a Hermes profile: the native dispatcher leaves these cards alone
-MADRID = ZoneInfo(CONFIG['zona']) if CONFIG.get('zona') else datetime.now().astimezone().tzinfo   # the owner's time zone
+def _zona():
+    """The owner's time zone (projects.json 'zona'), else this computer's. Windows without tzdata has no zone database."""
+    try: return ZoneInfo(CONFIG['zona']) if CONFIG.get('zona') else datetime.now().astimezone().tzinfo
+    except Exception: return datetime.now().astimezone().tzinfo
+MADRID = _zona()
 
 # Task boards: Hermes' Kanban where it is installed (and not turned off with "tablero": "propio"), else the team's own.
 HERMES_AGENT = Path(os.path.expanduser(CONFIG.get('hermes') or Path.home() / '.hermes' / 'hermes-agent'))
