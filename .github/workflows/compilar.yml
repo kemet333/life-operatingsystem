@@ -37,7 +37,7 @@ jobs:
           git config --global user.email ci@localhost && git config --global user.name ci
           node ../../alfred-os/node_modules/vite/bin/vite.js build --config vite.config.ts
           node build-server.mjs
-          for c in runtime telegram cartera contenido voice; do node $c-checks.mjs; done
+          fail=0; for c in runtime telegram cartera contenido voice; do node $c-checks.mjs || fail=1; done; exit $fail
   instaladores:
     needs: probar
     strategy:

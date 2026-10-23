@@ -10,6 +10,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { openDatabase } from './database.mjs';
 
 const localRoot = path.dirname(fileURLToPath(import.meta.url));
+// Two projects of this copy's built-in portfolio (the owner's or the open-source example), so the fixtures are valid in both.
+const [P1, P2] = [...fs.readFileSync(path.resolve(localRoot, '../../alfred-os/lib/alfred-data.ts'), 'utf8').matchAll(/\{id:'([\w-]+)',division:/g)].map(m => m[1]);
 const testRoot = path.resolve(localRoot, '../../../work/local-os-tests');
 fs.mkdirSync(testRoot, { recursive: true, mode: 0o700 });
 const runRoot = fs.mkdtempSync(path.join(testRoot, 'run-'));
@@ -32,12 +34,12 @@ function fixture() {
   return {
     version: 1, source: 'isolated-runtime-fixture', exportedAt: '2023-11-14T22:13:20.000Z',
     entries: [
-      { id: 'imported-queued', kind: 'request', project: 'tf', title: 'Imported queued test', body: 'Synthetic fixture only.', status: 'queued', role: 'radar', created_at: at, updated_at: at },
-      { id: 'imported-active', kind: 'request', project: 'tf', title: 'Imported active test', body: 'Synthetic fixture only.', status: 'dispatching', role: 'radar', created_at: at + 1, updated_at: at + 1 },
+      { id: 'imported-queued', kind: 'request', project: P1, title: 'Imported queued test', body: 'Synthetic fixture only.', status: 'queued', role: 'radar', created_at: at, updated_at: at },
+      { id: 'imported-active', kind: 'request', project: P1, title: 'Imported active test', body: 'Synthetic fixture only.', status: 'dispatching', role: 'radar', created_at: at + 1, updated_at: at + 1 },
     ],
     office: [
-      { id: 'settings', value: JSON.stringify({ focus: 'journal', energy: 'normal', action: 'Synthetic next step' }), updated_at: at },
-      { id: 'focus-session', value: JSON.stringify({ id: 'isolated-focus', revision: 1, project: 'journal', title: 'Synthetic focus', doneWhen: 'Synthetic result saved', minutes: 5, status: 'paused', note: 'Existing synthetic note', elapsed: 1000, startedAt: null, completedAt: null, updatedAt: at }), updated_at: at },
+      { id: 'settings', value: JSON.stringify({ focus: P2, energy: 'normal', action: 'Synthetic next step' }), updated_at: at },
+      { id: 'focus-session', value: JSON.stringify({ id: 'isolated-focus', revision: 1, project: P2, title: 'Synthetic focus', doneWhen: 'Synthetic result saved', minutes: 5, status: 'paused', note: 'Existing synthetic note', elapsed: 1000, startedAt: null, completedAt: null, updatedAt: at }), updated_at: at },
     ],
   };
 }
@@ -144,8 +146,8 @@ try {
     const directory = path.join(runRoot, 'database');
     const db = openDatabase(directory);
     try {
-      assert.equal(fs.statSync(directory).mode & 0o777, 0o700);
-      assert.equal(fs.statSync(path.join(directory, 'workspace.sqlite')).mode & 0o777, 0o600);
+      if (process.platform !== 'win32') assert.equal(fs.statSync(directory).mode & 0o777, 0o700);   // Windows has no POSIX modes
+      if (process.platform !== 'win32') assert.equal(fs.statSync(path.join(directory, 'workspace.sqlite')).mode & 0o777, 0o600);   // Windows has no POSIX modes
       const inserted = await db.DB.prepare('INSERT INTO office VALUES (?,?,?)').bind('one', '{"n":1}', 1).run();
       assert.equal(inserted.meta.changes, 1);
       assert.equal(await db.DB.prepare('SELECT value FROM office WHERE id=?').bind('one').first('value'), '{"n":1}');
@@ -405,7 +407,7 @@ try {
   await check('bootstrap sets private cookie without putting secrets in content', bootstrap);
   await check('import preserves history but admits no imported work', async () => {
     const response = await request('/api/office'); assert.equal(response.status, 200);
-    assert.equal(response.data.settings.focus, 'journal');
+    assert.equal(response.data.settings.focus, P2);
     assert.equal(response.data.focusSession.note, 'Existing synthetic note');
     assert.equal(response.data.local.bridge, 'disabled');
     assert.equal(response.data.entries.find(e => e.id === 'imported-queued').status, 'parked');
@@ -425,7 +427,7 @@ try {
     assert.equal((await request('/api/office', { headers: { 'Sec-Fetch-Site': 'cross-site' } })).status, 403, 'Cross-site request');
     assert.equal((await post('/api/office', value)).status, 200);
     const state = (await request('/api/office')).data;
-    assert.equal(state.settings.energy, 'low'); assert.equal(state.settings.focus, 'journal');
+    assert.equal(state.settings.energy, 'low'); assert.equal(state.settings.focus, P2);
   });
 
   await check('local cookie cannot invoke reserved bridge actions', async () => {
@@ -462,7 +464,7 @@ try {
   await check('focus writes preserve context and reject stale revisions', async () => {
     const response = await post('/api/office', { action: 'focus', command: 'note', id: 'isolated-focus', revision: 1, note: 'Updated synthetic checkpoint' });
     assert.equal(response.status, 200); assert.equal(response.data.session.revision, 2);
-    assert.equal(response.data.session.project, 'journal'); assert.equal(response.data.session.status, 'paused');
+    assert.equal(response.data.session.project, P2); assert.equal(response.data.session.status, 'paused');
     assert.equal((await post('/api/office', { action: 'focus', command: 'note', id: 'isolated-focus', revision: 1, note: 'Stale overwrite' })).status, 400);
     assert.equal((await request('/api/office')).data.focusSession.note, 'Updated synthetic checkpoint');
   });
@@ -485,7 +487,7 @@ try {
   });
 
   await check('review can be returned with feedback and is re-admitted', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic revise', body: 'Synthetic body' });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic revise', body: 'Synthetic body' });
     assert.equal(created.status, 200); const id = created.data.id;
     const db = new DatabaseSync(path.join(directory, 'workspace.sqlite'));
     try { db.prepare("UPDATE entries SET status='review',result=? WHERE id=?").run('Synthetic result', id); db.prepare('DELETE FROM local_admissions WHERE id=?').run(id); } finally { db.close(); }
@@ -504,7 +506,7 @@ try {
   });
 
   await check('revise stops growing a request past the accumulated body limit', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic revise limit', body: 'x'.repeat(LIMITS.ENTRY_BODY_MAX) });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic revise limit', body: 'x'.repeat(LIMITS.ENTRY_BODY_MAX) });
     assert.equal(created.status, 200); const id = created.data.id;
     const toReview = () => {
       const db = new DatabaseSync(path.join(directory, 'workspace.sqlite'));
@@ -527,7 +529,7 @@ try {
   });
 
   await check('a reviewed request can be accepted and then stays closed', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic accept', body: 'Synthetic body' });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic accept', body: 'Synthetic body' });
     assert.equal(created.status, 200); const id = created.data.id;
     const early = await post('/api/office', { action: 'update', id, status: 'accepted' });
     assert.equal(early.status, 400); assert.equal(early.data.error, 'Primero hace falta un resultado para revisar.');
@@ -546,12 +548,12 @@ try {
   });
 
   await check('create trims title and body to the shared limits', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'x'.repeat(LIMITS.ENTRY_TITLE_MAX + 20), body: 'y'.repeat(LIMITS.ENTRY_BODY_MAX + 100) });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'x'.repeat(LIMITS.ENTRY_TITLE_MAX + 20), body: 'y'.repeat(LIMITS.ENTRY_BODY_MAX + 100) });
     assert.equal(created.status, 200); const id = created.data.id;
     const entry = (await request('/api/office')).data.entries.find(e => e.id === id);
     assert.equal(entry.title.length, LIMITS.ENTRY_TITLE_MAX); assert.equal(entry.body.length, LIMITS.ENTRY_BODY_MAX);
     assert.equal((await post('/api/office', { action: 'update', id, status: 'cancelled' })).status, 200);
-    const exact = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'x'.repeat(LIMITS.ENTRY_TITLE_MAX), body: 'y'.repeat(LIMITS.ENTRY_BODY_MAX) });
+    const exact = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'x'.repeat(LIMITS.ENTRY_TITLE_MAX), body: 'y'.repeat(LIMITS.ENTRY_BODY_MAX) });
     assert.equal(exact.status, 200);
     const kept = (await request('/api/office')).data.entries.find(e => e.id === exact.data.id);
     assert.equal(kept.title, 'x'.repeat(LIMITS.ENTRY_TITLE_MAX)); assert.equal(kept.body, 'y'.repeat(LIMITS.ENTRY_BODY_MAX));
@@ -559,7 +561,7 @@ try {
   });
 
   await check('revise keeps feedback up to the shared limit', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic revise feedback limit', body: 'Synthetic body' });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic revise feedback limit', body: 'Synthetic body' });
     assert.equal(created.status, 200); const id = created.data.id;
     const toReview = () => {
       const db = new DatabaseSync(path.join(directory, 'workspace.sqlite'));
@@ -581,7 +583,7 @@ try {
   });
 
   await check('a cancelled request stays closed', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic cancelled', body: 'Synthetic body' });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic cancelled', body: 'Synthetic body' });
     assert.equal(created.status, 200); const id = created.data.id;
     assert.equal((await post('/api/office', { action: 'update', id, status: 'cancelled' })).status, 200);
     const admissions = () => inspect(directory, db => db.prepare('SELECT COUNT(*) n FROM local_admissions WHERE id=?').get(id).n);
@@ -610,7 +612,7 @@ try {
     const entryOf = async id => (await request('/api/office')).data.entries.find(e => e.id === id);
     const refused = 'No se puede volver a despachar este encargo.';
 
-    const retried = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic blocked retry', body: 'Synthetic body' });
+    const retried = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic blocked retry', body: 'Synthetic body' });
     assert.equal(retried.status, 200); const retryId = retried.data.id;
     force(retryId, 'blocked', 'Synthetic block reason');
     assert.equal((await post('/api/office', { action: 'update', id: retryId, status: 'queued', result: 'Owner override' })).status, 200);
@@ -619,7 +621,7 @@ try {
     assert.equal(admissions(retryId), 1);
     assert.equal((await post('/api/office', { action: 'update', id: retryId, status: 'cancelled' })).status, 200);
 
-    const cancelled = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic blocked cancel', body: 'Synthetic body' });
+    const cancelled = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic blocked cancel', body: 'Synthetic body' });
     assert.equal(cancelled.status, 200); const cancelId = cancelled.data.id;
     force(cancelId, 'blocked', 'Synthetic block reason');
     assert.equal((await post('/api/office', { action: 'update', id: cancelId, status: 'cancelled' })).status, 200);
@@ -629,7 +631,7 @@ try {
     assert.equal((await entryOf(cancelId)).status, 'cancelled');
     assert.equal(admissions(cancelId), before);
 
-    const other = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic blocked conversation', body: 'Synthetic body' });
+    const other = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic blocked conversation', body: 'Synthetic body' });
     assert.equal(other.status, 200); const otherId = other.data.id;
     force(otherId, 'blocked', 'x', 'conversation');
     const conversation = await post('/api/office', { action: 'update', id: otherId, status: 'queued' });
@@ -638,7 +640,7 @@ try {
   });
 
   await check('a blocked request can be retried and is re-admitted', async () => {
-    const created = await post('/api/office', { action: 'create', kind: 'request', project: 'tf', role: 'radar', title: 'Synthetic blocked readmit', body: 'Synthetic body' });
+    const created = await post('/api/office', { action: 'create', kind: 'request', project: P1, role: 'radar', title: 'Synthetic blocked readmit', body: 'Synthetic body' });
     assert.equal(created.status, 200); const id = created.data.id;
     const db = new DatabaseSync(path.join(directory, 'workspace.sqlite'));
     try { db.prepare("UPDATE entries SET status='blocked',result=? WHERE id=?").run('Synthetic block reason', id); db.prepare('DELETE FROM local_admissions WHERE id=?').run(id); } finally { db.close(); }
@@ -685,7 +687,7 @@ try {
     assert.equal((await request('/api/office', { cookie: previous.cookie })).status, 401);
     await bootstrap();
     const data = (await request('/api/office')).data;
-    assert.equal(data.settings.energy, 'low'); assert.equal(data.settings.focus, 'journal');
+    assert.equal(data.settings.energy, 'low'); assert.equal(data.settings.focus, P2);
     assert.equal(data.focusSession.note, 'Updated synthetic checkpoint');
     assert.ok(data.entries.some(e => e.id === 'idea-' + captureId));
     assert.ok(data.entries.some(e => e.id === 'chat-' + conversationId));
