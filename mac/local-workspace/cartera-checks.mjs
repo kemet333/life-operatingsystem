@@ -7,13 +7,15 @@ import {createRequire} from 'node:module';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
 const require=createRequire(process.env.LIFE_OS_DEPS_DIR?path.join(process.env.LIFE_OS_DEPS_DIR,'package.json'):path.resolve(root,'../../alfred-os/package.json'));
+// The first area of this copy's built-in portfolio (the owner's or the open-source example).
+const AREA=fs.readFileSync(path.resolve(root,'../../alfred-os/lib/alfred-data.ts'),'utf8').match(/\{id:'([\w-]+)',name:/)[1];
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cartera-checks-')),vault=path.join(dir,'vault'),cartera=path.join(vault,'01-Projects/Cartera');
 fs.mkdirSync(cartera,{recursive:true});
 fs.writeFileSync(path.join(vault,'USER.md'),'# Ana\n');
 fs.writeFileSync(path.join(dir,'secret.md'),'# fuera del vault\n');
 fs.writeFileSync(path.join(vault,'notas.txt'),'no markdown');
 fs.symlinkSync(path.join(dir,'secret.md'),path.join(vault,'enlace.md'));
-fs.writeFileSync(path.join(cartera,'Huerto.md'),'---\ntipo: proyecto\nid: huerto\narea: social\nlinea: Huerto\netapa: "MVP"\nequipo: \norden: 2\n---\n# Huerto\n\n**Evidencia:** Probado con 10 personas.\n\n## Contexto para el equipo\n<!-- nota -->\nApp social.\n');
+fs.writeFileSync(path.join(cartera,'Huerto.md'),'---\ntipo: proyecto\nid: huerto\narea: '+AREA+'\nlinea: Huerto\netapa: "MVP"\nequipo: \norden: 2\n---\n# Huerto\n\n**Evidencia:** Probado con 10 personas.\n\n## Contexto para el equipo\n<!-- nota -->\nApp social.\n');
 fs.writeFileSync(path.join(cartera,'Suelta.md'),'# Sin propiedades\n');
 process.env.LIFE_OS_VAULT_DIR=vault;process.env.LIFE_OS_CARTERA_DIR=cartera;
 const bundle=path.join(dir,'cartera.mjs');
@@ -22,7 +24,7 @@ const c=await import(pathToFileURL(bundle).href);
 const ok=(cond,name)=>{console.log((cond?'PASS ':'FAIL ')+name);if(!cond)process.exitCode=1;};
 
 const list=await c.read();
-ok(list.length===1&&list[0].id==='huerto'&&list[0].division==='social'&&list[0].stage==='MVP','a note with project properties becomes a project; loose notes are ignored');
+ok(list.length===1&&list[0].id==='huerto'&&list[0].division===AREA&&list[0].stage==='MVP','a note with project properties becomes a project; loose notes are ignored');
 ok(list[0].evidence==='Probado con 10 personas.'&&list[0].context==='App social.'&&list[0].note===path.join(cartera,'Huerto.md'),'evidence, context (comments removed) and note path are read');
 ok((await c.note('USER.md'))?.text==='# Ana\n','a vault note can be read by its relative path');
 ok((await c.note(path.join(cartera,'Huerto.md')))?.name==='Huerto','a vault note can be read by its absolute path');

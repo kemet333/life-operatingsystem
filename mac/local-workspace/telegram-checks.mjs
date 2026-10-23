@@ -63,7 +63,7 @@ msg('/vincular 000000');await settle();
 ok(tg.status().estado==='sin-vincular','a wrong code does not link');
 msg('/vincular '+code);await settle();
 ok(tg.status().estado==='vinculado'&&JSON.parse(fs.readFileSync(path.join(dir,'telegram.json'),'utf8')).chatId===42,'the right code links this chat and saves it');
-ok((fs.statSync(path.join(dir,'telegram.json')).mode&0o777)===0o600,'the link file is private to the user');
+if(process.platform!=='win32')ok((fs.statSync(path.join(dir,'telegram.json')).mode&0o777)===0o600,'the link file is private to the user');   // Windows has no POSIX modes
 const before=sent.length;
 msg('/equipo',99,99);await settle();
 ok(sent.length===before,'once linked, any other chat is ignored without a reply');
@@ -221,7 +221,8 @@ const after=JSON.parse(fs.readFileSync(path.join(dir,'repaso','tarjetas.json'),'
 ok(edits()-e0===3&&after[0].reps===1&&after[0].interval===2&&after[1].fallos===1&&after[1].interval===1,'answers move each card to its next date in the same message');
 // Apple Reminders through a fake helper: /hoy creates the list's reminders, ticks on the iPhone reach Telegram,
 // and a reminder the owner adds to the list becomes a task.
-{const state=path.join(dir,'cal-state.json'),log=path.join(dir,'cal-log.txt'),fakeHelper=path.join(dir,'alfred-calendario');
+// The fake helper is a script with a shebang, which Windows cannot run; Apple Reminders only exist on the Mac anyway.
+if(process.platform!=='win32'){const state=path.join(dir,'cal-state.json'),log=path.join(dir,'cal-log.txt'),fakeHelper=path.join(dir,'alfred-calendario');
  fs.writeFileSync(state,JSON.stringify({rems:[{id:'R-old',titulo:'Responder al equipo (1 pregunta, /mesa)',hecho:false}],events:[{titulo:'Fisio',inicio:'2026-10-17T08:30:00Z',fin:'2026-10-17T09:30:00Z',todoElDia:false,calendario:'Casa'}]}));
  fs.writeFileSync(fakeHelper,`#!${process.execPath}
 const fs=require('fs'),[cmd,...a]=process.argv.slice(2),st=JSON.parse(fs.readFileSync(${JSON.stringify(state)},'utf8'));fs.appendFileSync(${JSON.stringify(log)},cmd+' '+a.join('|')+'\\n');

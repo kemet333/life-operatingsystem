@@ -25,13 +25,16 @@ export function parse(text:string,file:string):(Project&{order:number})|null{
  const body=m[2],name=(body.match(/^#\s+(.+)$/m)?.[1]||path.basename(file,'.md')).trim();
  const evidence=(body.match(/\*\*Evidencia:\*\*\s*(.+)/)?.[1]||'').trim();
  const context=(body.split(/^##\s+Contexto[^\n]*$/m)[1]||'').replace(/<!--[\s\S]*?-->/g,'').trim();
- const division=divisions.some(d=>d.id===fm.area)?fm.area:'lab';
+ const division=divisions.some(d=>d.id===fm.area)?fm.area:divisions[divisions.length-1].id;   // unknown area: the last one (personal)
  return {id:fm.id,division,name:name.slice(0,80),line:(fm.linea||'').slice(0,60),stage:(fm.etapa||'Por documentar').slice(0,60),next:(fm.siguiente||'').slice(0,240),
   repo:/^https:\/\//.test(fm.repo||'')?fm.repo:'',evidence:evidence.slice(0,400),context:context.slice(0,4000),updated:fm.actualizado||'',team:fm.equipo||'',source:path.basename(file),note:path.join(CARTERA,path.basename(file)),order:Number(fm.orden)||999};
 }
 // Read on demand (a couple of dozen small files); a missing or empty folder means "use the built-in list".
 // Asynchronous on purpose: ~/Documents is guarded by macOS, and while its permission prompt waits a synchronous
 // read would freeze the whole local server (and Alfred's voice) instead of just this list.
+// Vault paths travel to the interface with '/' on every system.
+const posix=(p:string)=>p.split(path.sep).join('/');
+
 export async function read():Promise<Project[]>{
  let files:string[]=[];if(!CARTERA)return [];try{files=(await fs.promises.readdir(CARTERA)).filter(f=>f.endsWith('.md'));}catch{return [];}
  const seen=new Set<string>(),list:(Project&{order:number})[]=[];
@@ -67,12 +70,12 @@ export async function folder(rel:string):Promise<{path:string;dirs:(Entry&{count
   const at=await within(rel);if(!at||!(await fs.promises.stat(at.real)).isDirectory())return null;
   const dirs:(Entry&{count:number})[]=[],notes:(Entry&{updated:number})[]=[];
   for(const e of await fs.promises.readdir(at.real,{withFileTypes:true})){
-   if(hidden(e.name))continue;const full=path.join(at.real,e.name),relative=path.relative(at.root,full);
+   if(hidden(e.name))continue;const full=path.join(at.real,e.name),relative=posix(path.relative(at.root,full));
    if(e.isDirectory()){let count=0;try{count=(await fs.promises.readdir(full,{withFileTypes:true})).filter(x=>!hidden(x.name)&&(x.isDirectory()||x.name.endsWith('.md'))).length;}catch{}dirs.push({name:e.name,path:relative,count});}
    else if(e.isFile()&&e.name.endsWith('.md'))notes.push({name:e.name.slice(0,-3),path:relative,updated:(await fs.promises.stat(full)).mtimeMs});
   }
   dirs.sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));notes.sort((a,b)=>b.updated-a.updated);
-  return {path:path.relative(at.root,at.real),dirs,notes};
+  return {path:posix(path.relative(at.root,at.real)),dirs,notes};
  }catch{return null;}
 }
 // The notes touched lately, newest first, for «Recientes» (grouped by day in the app).
@@ -84,7 +87,7 @@ export async function recent(days=30,limit=80):Promise<(Entry&{updated:number;fo
   if(depth>6)return;let entries:fs.Dirent[];try{entries=await fs.promises.readdir(dir,{withFileTypes:true});}catch{return;}
   for(const e of entries){if(hidden(e.name))continue;const full=path.join(dir,e.name);
    if(e.isDirectory())await walk(full,depth+1);
-   else if(e.isFile()&&e.name.endsWith('.md')){const t=(await fs.promises.stat(full)).mtimeMs;if(t>=since)out.push({name:e.name.slice(0,-3),path:path.relative(root,full),updated:t,folder:path.relative(root,dir)});}}
+   else if(e.isFile()&&e.name.endsWith('.md')){const t=(await fs.promises.stat(full)).mtimeMs;if(t>=since)out.push({name:e.name.slice(0,-3),path:posix(path.relative(root,full)),updated:t,folder:posix(path.relative(root,dir))});}}
  };
  await walk(root,0);
  return out.sort((a,b)=>b.updated-a.updated).slice(0,limit);
