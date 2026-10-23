@@ -11,9 +11,14 @@ It runs on your own computer, with your own Claude account. Your notes stay in y
 The first public release is on its way, for **macOS (Apple silicon)** and **Windows**.
 Press **Watch → Custom → Releases** (or Star) on this page to be told when it is out.
 
-- **First release:** the chief of staff (voice and text), Telegram, the daily to-do, spaced-repetition review,
-  your notes as memory, and a desktop app with an installer for Mac and Windows.
-- **Next:** a team of AI agents that plan, build and review your projects day and night.
+Everything in one app, brand new and set up on first launch with your own name, projects and accounts:
+
+- **Your chief of staff**: voice and text, with a natural voice, and the same assistant on Telegram.
+- **A team of AI agents**: six departments that plan your projects every morning, build in their own branch,
+  review each other and wait for your yes. One task per agent, a receipt for every change.
+- **Your day**: a short to-do every morning, your calendar, a day and week close, spaced-repetition review.
+- **Your memory**: your own notes folder (Obsidian works) as long-term memory.
+- **Content**: a calendar of what goes out, with previews, and the trends that work in your niche.
 
 ## Principles
 
