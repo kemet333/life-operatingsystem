@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { randomUUID, createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
@@ -198,7 +198,7 @@ try {
     const require = createRequire(process.env.LIFE_OS_DEPS_DIR ? path.join(process.env.LIFE_OS_DEPS_DIR, 'package.json') : path.resolve(localRoot, '../../alfred-os/package.json'));
     const bundle = path.join(runRoot, 'equipo-acciones.mjs');
     await require('esbuild').build({ entryPoints: [path.join(localRoot, 'equipo-acciones.ts')], outfile: bundle, bundle: true, platform: 'node', format: 'esm', target: 'node26', logLevel: 'warning' });
-    const { experimentoArgs, lanzadoBoton, decisionExperimentoBoton, BOTON_DECIDIR, BOTON_LANZADO, BOTON_MEDIDO, BOTON_NO_LANZO, BOTON_FUSIONAR, boton, medidoBoton, noLanzoBoton, fusionarBoton, experimentosPendientes, decisionDeTexto } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { experimentoArgs, lanzadoBoton, decisionExperimentoBoton, BOTON_DECIDIR, BOTON_LANZADO, BOTON_MEDIDO, BOTON_NO_LANZO, BOTON_FUSIONAR, boton, medidoBoton, noLanzoBoton, fusionarBoton, experimentosPendientes, decisionDeTexto } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     const texto = 'Medí 12 clics en 3 días y salió bien.';
     assert.deepEqual(experimentoArgs({ action: 'lanzado', tarea: 't_036cee09' }), { args: ['lanzado', 't_036cee09', '--via', 'app'] });
     for (const tarea of ['', '../x', 't;rm', '--texto', '-abc', '_abc', 'a'.repeat(81)]) assert.equal(experimentoArgs({ action: 'lanzado', tarea }).error, 'Tarea no válida.');
@@ -264,7 +264,7 @@ try {
     ]);
     assert.deepEqual(porLanzar.map(it => it.id), ['t_por_lanzar']);
     assert.deepEqual(faltaMedir.map(it => it.id), ['t_falta_medir']);
-    const { decisionesExperimentos } = await import(bundle);
+    const { decisionesExperimentos } = await import(pathToFileURL(bundle).href);
     assert.deepEqual(decisionesExperimentos([]), []);
     assert.deepEqual(decisionesExperimentos(undefined), []);
     const porLanzarItem = id => ({ id, fuente: 'equipo', columna: 'para-ti', lanzamiento });
@@ -289,7 +289,7 @@ try {
   });
 
   await check('telegram reply to the measure question finds its experiment again from the quoted text', async () => {
-    const { preguntaMedido, experimentoDeRespuesta, preguntaFreno, experimentoDeFreno } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { preguntaMedido, experimentoDeRespuesta, preguntaFreno, experimentoDeFreno } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     assert.equal(preguntaMedido('Anuncio medible'), '¿Qué mediste en «Anuncio medible»? Respóndeme a este mensaje.');
     const a = { id: 't_a', titulo: 'Anuncio medible' }, b = { id: 't_b', titulo: 'Otro anuncio' }, c = { id: 't_c', titulo: 'Prueba «x» de precio' };
     assert.equal(experimentoDeRespuesta(preguntaMedido(a.titulo), [b, a]), a);
@@ -308,7 +308,7 @@ try {
   });
 
   await check('telegram morning to-do puts experiments before the other decisions', async () => {
-    const { decisionesDelEquipo } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { decisionesDelEquipo } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     const lanzamiento = { que: 'Q', a_quien: 'A', metrica: 'M', umbral: 'U' };
     const proyecto = nombre => ({ nombre, lote: { estado: 'pendiente', tareas: [{ id: 't' }] }, por_fusionar: 2 });
     const status = {
@@ -331,7 +331,7 @@ try {
   });
 
   await check('telegram grouped decisions include measured experiments first and offer their messages', async () => {
-    const { decisionesDelEquipo, mensajesFaltaDecidir } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { decisionesDelEquipo, mensajesFaltaDecidir } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     const item = { id: 't_falta_decidir', proyecto: 'a', titulo: 'Experimento', fuente: 'equipo', lanzamiento: { metrica: 'M', umbral: 'U' }, lanzado: '2026-10-10T10:00:00', medido: '2026-10-15T10:00:00', fase: 'falta decidir' };
     const status = { proyectos: { a: { nombre: 'A' } }, para_ti: [{ tipo: 'lanzar', titulo: 'Lanzar la campaña', claves: ['l:t_otro'] }], tablero: [item] };
     assert.deepEqual(decisionesDelEquipo(status), ['decidir 1 experimento (/lote)', 'lanzar la campaña (/lote)']);
@@ -351,7 +351,7 @@ try {
   });
 
   await check('telegram launch groups warn and offer merging only for pending members', async () => {
-    const { fusionPendienteDeGrupo, textoGrupo, botonesGrupo, mensajesFusion } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { fusionPendienteDeGrupo, textoGrupo, botonesGrupo, mensajesFusion } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     const g = { id: '1234abcd', tipo: 'lanzar', titulo: 'Lanzar el experimento', claves: ['l:t_lanza'] };
     const item = { id: 't_lanza', fuente: 'equipo', fase: 'lista para lanzar · falta fusionar', proyecto: 'demo' };
     const original = { inline_keyboard: [[
@@ -382,7 +382,7 @@ try {
   });
 
   await check('telegram offers no button when callback_data goes over 64 bytes', async () => {
-    const { BOTON_LANZADO, BOTON_MEDIDO, BOTON_DECIDIR, boton } = await import(path.join(runRoot, 'equipo-acciones.mjs'));
+    const { BOTON_LANZADO, BOTON_MEDIDO, BOTON_DECIDIR, boton } = await import(pathToFileURL(path.join(runRoot, 'equipo-acciones.mjs')).href);
     for (const prefijo of [BOTON_LANZADO, BOTON_MEDIDO, ...['seguir', 'cambiar', 'parar'].map(d => BOTON_DECIDIR + d + ':')]) {
       assert.equal(boton(prefijo, 'a'.repeat(80)), null);
       assert.equal(boton(prefijo, 't_036cee09'), prefijo + 't_036cee09');

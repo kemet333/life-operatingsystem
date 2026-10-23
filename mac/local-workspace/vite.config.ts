@@ -1,14 +1,17 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 
 const localRoot = fileURLToPath(new URL('.', import.meta.url));
 const sourceRoot = fileURLToPath(new URL('../../alfred-os/', import.meta.url));
 const dependenciesRoot = process.env.LIFE_OS_DEPS_DIR || sourceRoot;
 const requireSource = createRequire(path.join(dependenciesRoot, 'package.json'));
 export default async function localWorkspaceConfig() {
- const { default: react } = await import(requireSource.resolve('@vitejs/plugin-react'));
- const { default: tailwind } = await import(requireSource.resolve('@tailwindcss/postcss'));
+ // import() needs file:// URLs for absolute paths on Windows.
+ const load = name => import(pathToFileURL(requireSource.resolve(name)).href);
+ const { default: react } = await load('@vitejs/plugin-react');
+ const { default: tailwind } = await load('@tailwindcss/postcss');
  return {
   root: localRoot,
   base: '/',

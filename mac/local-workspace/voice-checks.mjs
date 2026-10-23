@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL } from 'node:url';
 import {createRequire} from 'node:module';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
@@ -11,7 +11,7 @@ const require=createRequire(process.env.LIFE_OS_DEPS_DIR?path.join(process.env.L
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'voice-checks-')),bundle=path.join(dir,'voice.mjs');
 await require('esbuild').build({entryPoints:[path.join(root,'voice.ts')],outfile:bundle,bundle:true,platform:'node',format:'esm',target:'node26',external:['@anthropic-ai/claude-agent-sdk'],logLevel:'warning'});
 process.env.LIFE_OS_VAULT_DIR='/tmp/notas-ana';   // config.ts: the notes vault of this copy
-const voice=await import(bundle);
+const voice=await import(pathToFileURL(bundle).href);
 const model=text=>voice.route(text).model;
 const SONNET='claude-sonnet-5-5',OPUS='claude-opus-5-5';
 

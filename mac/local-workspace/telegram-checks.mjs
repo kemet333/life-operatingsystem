@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import {execFile as execFileCb} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL } from 'node:url';
 import {createRequire} from 'node:module';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
@@ -43,7 +43,7 @@ process.env.LIFE_OS_TELEGRAM_TEST_TOKEN=TOKEN;
 
 const engine=[];
 const status={fecha:'2026-10-05',pausado:false,proyectos:{alfa:{nombre:'Alfa Studio',tareas:[{id:'a',titulo:'Hecha antes',estado:'hecha',hora:'02:14'},{id:'b',titulo:'Prueba E2E',estado:'trabajando'}],trabajando:[{titulo:'Prueba E2E'}],pendientes:[1,2],hechas:[1],bloqueadas:[],lote:{estado:'pendiente',tareas:[{titulo:'Uno'},{titulo:'Dos'}]}}},mesa:{reunion:{resumen:'Todo en orden',acuerdos:[{titulo:'Acuerdo A'}]},mensajes:[{id:'M1',de:'control',para:['owner'],tipo:'pregunta',texto:'¿Aceptas X?'},{id:'M2',de:'radar',para:['owner'],tipo:'aviso',texto:'Un aviso que no es pregunta'}],departamentos:{control:'Control'}},hermes:{tableros:[],programadas:[]}};
-const tg=await import(bundle);
+const tg=await import(pathToFileURL(bundle).href);
 tg.start({dataDir:dir,equipo:async args=>{engine.push(args.join(' '));return JSON.stringify(status);},remember:async()=>{}});
 
 let update=1;
@@ -254,7 +254,7 @@ ok(!JSON.stringify(sent).includes(TOKEN),'the bot token never appears in a messa
  }}
 // The to-do's pure pieces: Alfred's reply → five short lines; directives add or tick and never reach the owner.
 {const hb=path.join(dir,'hoy.mjs');await require('esbuild').build({entryPoints:[path.join(root,'hoy.ts')],outfile:hb,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
- const h=await import(hb);
+ const h=await import(pathToFileURL(hb).href);
  const lines=h.parse('Claro, aquí va:\n- **Aprobar** el lote de TF.\n- Sol 10 min\n- Sol 10 min\n1. Llamar al gestor por el IVA del tercer trimestre y cerrar lo pendiente con él hoy\n- a\n- b\n- c');
  ok(lines.length===5&&lines[0]==='Aprobar el lote de TF'&&lines[2].length<=70&&!lines.includes('Claro, aquí va:'),'Alfred\'s reply becomes at most five short, unique lines');
  const day={fecha:'2026-10-17',items:[{t:'Aprobar el lote de TF',hecho:false}]};
@@ -265,18 +265,18 @@ ok(!JSON.stringify(sent).includes(TOKEN),'the bot token never appears in a messa
  ok(h.prompt({yesterday:{fecha:'2026-10-16',items:[{t:'Llamar al gestor',hecho:false}]},decisions:['aprobar el lote de TF (/lote)']}).includes('De ayer quedó sin hacer: Llamar al gestor'),'yesterday\'s undone tasks reach the morning prompt');}
 // Spaced repetition: a miss comes back tomorrow, good answers wait longer each time; Alfred's directives become cards.
 {const rb=path.join(dir,'repaso.mjs');await require('esbuild').build({entryPoints:[path.join(root,'repaso.ts')],outfile:rb,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
- const r=await import(rb),d=new Date('2026-10-17T10:00:00'),cards=[];
+ const r=await import(pathToFileURL(rb).href),d=new Date('2026-10-17T10:00:00'),cards=[];
  const out=r.applyDirectives('Guardado para repasar. <<repaso:Trading|¿Qué es el apalancamiento?||Operar con más capital del que pones.>> <<repaso:¿Qué es el apalancamiento?||duplicada>>',cards,d);
  ok(out.text==='Guardado para repasar.'&&cards.length===1&&cards[0].tema==='Trading'&&cards[0].due==='2026-10-17','a directive saves one card (with its topic, due today) and repeated questions are ignored');
  const c=cards[0];r.grade(c,2,d);const i1=c.interval;r.grade(c,2,d);const i2=c.interval;r.grade(c,2,d);const i3=c.interval;r.grade(c,0,d);
  ok(i1===2&&i2===6&&i3>=15&&c.interval===1&&c.due==='2026-10-18','intervals grow 2 → 6 → ~15 days and a miss brings it back tomorrow');
  ok(r.due([...cards,{...c,id:'x',q:'otra',due:'2026-12-01'}],d).length===0||r.due(cards,d).every(x=>x.due<='2026-10-17'),'only cards due today are asked');}
 {const cb=path.join(dir,'cal.mjs');await require('esbuild').build({entryPoints:[path.join(root,'calendario.ts')],outfile:cb,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
- const c=await import(cb),line=c.agenda([{titulo:'Gym',inicio:'2026-10-17T16:30:00Z',fin:'',todoElDia:false,calendario:''},{titulo:'Cumpleaños de Ana',inicio:'2026-10-17T00:00:00Z',fin:'',todoElDia:true,calendario:''}]);
+ const c=await import(pathToFileURL(cb).href),line=c.agenda([{titulo:'Gym',inicio:'2026-10-17T16:30:00Z',fin:'',todoElDia:false,calendario:''},{titulo:'Cumpleaños de Ana',inicio:'2026-10-17T00:00:00Z',fin:'',todoElDia:true,calendario:''}]);
  ok(/^\d{2}:\d{2} Gym · Cumpleaños de Ana$/.test(line),'today\'s events become one agenda line: '+line);}
 // Links the owner sends are read without asking; others still need his yes.
 {const vb=path.join(dir,'voice.mjs');await require('esbuild').build({entryPoints:[path.join(root,'voice.ts')],outfile:vb,bundle:true,platform:'node',format:'esm',target:'node26',external:['@anthropic-ai/claude-agent-sdk'],logLevel:'warning'});
- const v=await import(vb);
+ const v=await import(pathToFileURL(vb).href);
  ok(JSON.stringify(v.linksIn('Mira esto: https://example.com/a?b=1, y (https://x.io/post).'))==='["https://example.com/a?b=1","https://x.io/post"]','the links in a message are found without trailing punctuation');}
 tg.stop();waiter?.();fake.close();fs.rmSync(dir,{recursive:true,force:true});
 console.log(process.exitCode?'TELEGRAM CHECKS FAILED':'TELEGRAM CHECKS PASSED');

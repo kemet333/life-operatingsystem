@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL } from 'node:url';
 import {createRequire} from 'node:module';
 import {DatabaseSync} from 'node:sqlite';
 
@@ -65,7 +65,7 @@ fs.writeFileSync(path.join(data,'configuracion.json'),JSON.stringify({contenido:
 Object.assign(process.env,{LIFE_OS_VAULT_DIR:vault,LIFE_OS_RF_DB:db,LIFE_OS_FV_OUT:out,LIFE_OS_COURSE_REELS:reels,LIFE_OS_DAY_REELS:days,LIFE_OS_CONTENT_PLAN:'01-Projects/alfa/contenido'});
 const bundle=path.join(dir,'contenido.mjs');
 await require('esbuild').build({entryPoints:[path.join(root,'contenido.ts')],outfile:bundle,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
-const c=await import(bundle);
+const c=await import(pathToFileURL(bundle).href);
 const ok=(cond,name)=>{console.log((cond?'PASS ':'FAIL ')+name);if(!cond)process.exitCode=1;};
 const pub=id=>{const s=new DatabaseSync(db,{readOnly:true});try{return s.prepare('select * from publications where id=?').get(id);}finally{s.close();}};
 

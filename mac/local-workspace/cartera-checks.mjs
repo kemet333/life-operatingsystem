@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL } from 'node:url';
 import {createRequire} from 'node:module';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
@@ -18,7 +18,7 @@ fs.writeFileSync(path.join(cartera,'Suelta.md'),'# Sin propiedades\n');
 process.env.LIFE_OS_VAULT_DIR=vault;process.env.LIFE_OS_CARTERA_DIR=cartera;
 const bundle=path.join(dir,'cartera.mjs');
 await require('esbuild').build({entryPoints:[path.join(root,'cartera.ts')],outfile:bundle,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
-const c=await import(bundle);
+const c=await import(pathToFileURL(bundle).href);
 const ok=(cond,name)=>{console.log((cond?'PASS ':'FAIL ')+name);if(!cond)process.exitCode=1;};
 
 const list=await c.read();

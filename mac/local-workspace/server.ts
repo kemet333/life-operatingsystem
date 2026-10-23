@@ -35,7 +35,7 @@ let queue=Promise.resolve();
 function serial<T>(fn:()=>Promise<T>):Promise<T>{const run=queue.then(fn);queue=run.then(()=>{},()=>{});return run;}
 function equal(a:unknown,b:string){if(typeof a!=='string')return false;const left=Buffer.from(a),right=Buffer.from(b);return left.length===right.length&&timingSafeEqual(left,right);}
 function send(res:http.ServerResponse,code:number,body:unknown){res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));}
-function authenticated(req:http.IncomingMessage){const cookies=(req.headers.cookie||'').split(';').map(s=>s.trim());return cookies.some(c=>c.startsWith('life_local=')&&equal(c.slice(12),session));}
+function authenticated(req:http.IncomingMessage){const cookies=(req.headers.cookie||'').split(';').map(s=>s.trim());const name='life_local=';return cookies.some(c=>c.startsWith(name)&&equal(c.slice(name.length),session));}
 async function body(req:http.IncomingMessage){let size=0;const chunks=[];for await(const piece of req){size+=piece.length;if(size>262144)throw Error('La petición es demasiado grande.');chunks.push(piece);}return JSON.parse(Buffer.concat(chunks).toString('utf8'));}
 function eligible(id:string){return !!database.sqlite.prepare('SELECT 1 FROM local_admissions WHERE id=?').get(id);}
 function admit(id:unknown){if(typeof id==='string')database.sqlite.prepare('INSERT OR IGNORE INTO local_admissions VALUES (?,?)').run(id,Date.now());}
