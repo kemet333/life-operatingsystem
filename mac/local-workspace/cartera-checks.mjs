@@ -1,0 +1,41 @@
+// Portfolio and vault-note checks: notes parse into projects, and Memoria can only read .md files inside the vault.
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
+
+const root=path.dirname(fileURLToPath(import.meta.url));
+const require=createRequire(process.env.LIFE_OS_DEPS_DIR?path.join(process.env.LIFE_OS_DEPS_DIR,'package.json'):path.resolve(root,'../../alfred-os/package.json'));
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cartera-checks-')),vault=path.join(dir,'vault'),cartera=path.join(vault,'01-Projects/Cartera');
+fs.mkdirSync(cartera,{recursive:true});
+fs.writeFileSync(path.join(vault,'USER.md'),'# Ana\n');
+fs.writeFileSync(path.join(dir,'secret.md'),'# fuera del vault\n');
+fs.writeFileSync(path.join(vault,'notas.txt'),'no markdown');
+fs.symlinkSync(path.join(dir,'secret.md'),path.join(vault,'enlace.md'));
+fs.writeFileSync(path.join(cartera,'Huerto.md'),'---\ntipo: proyecto\nid: huerto\narea: social\nlinea: Huerto\netapa: "MVP"\nequipo: \norden: 2\n---\n# Huerto\n\n**Evidencia:** Probado con 10 personas.\n\n## Contexto para el equipo\n<!-- nota -->\nApp social.\n');
+fs.writeFileSync(path.join(cartera,'Suelta.md'),'# Sin propiedades\n');
+process.env.LIFE_OS_VAULT_DIR=vault;process.env.LIFE_OS_CARTERA_DIR=cartera;
+const bundle=path.join(dir,'cartera.mjs');
+await require('esbuild').build({entryPoints:[path.join(root,'cartera.ts')],outfile:bundle,bundle:true,platform:'node',format:'esm',target:'node26',logLevel:'warning'});
+const c=await import(bundle);
+const ok=(cond,name)=>{console.log((cond?'PASS ':'FAIL ')+name);if(!cond)process.exitCode=1;};
+
+const list=await c.read();
+ok(list.length===1&&list[0].id==='huerto'&&list[0].division==='social'&&list[0].stage==='MVP','a note with project properties becomes a project; loose notes are ignored');
+ok(list[0].evidence==='Probado con 10 personas.'&&list[0].context==='App social.'&&list[0].note===path.join(cartera,'Huerto.md'),'evidence, context (comments removed) and note path are read');
+ok((await c.note('USER.md'))?.text==='# Ana\n','a vault note can be read by its relative path');
+ok((await c.note(path.join(cartera,'Huerto.md')))?.name==='Huerto','a vault note can be read by its absolute path');
+ok(await c.note('../secret.md')===null&&await c.note(path.join(dir,'secret.md'))===null,'nothing outside the vault can be read');
+ok(await c.note('enlace.md')===null,'a symlink pointing outside the vault is refused');
+ok(await c.note('notas.txt')===null&&await c.note('')===null,'only .md files');
+fs.mkdirSync(path.join(vault,'.obsidian'));fs.writeFileSync(path.join(vault,'.obsidian/app.md'),'x');
+const top=await c.folder('');
+ok(top.dirs.map(d=>d.name).join()==='01-Projects'&&top.notes.map(n=>n.name).includes('USER'),'a folder lists its subfolders and notes, never hidden folders');
+ok(top.dirs[0].count===1&&(await c.folder('01-Projects/Cartera')).notes.length===2,'folders say how many items they hold');
+ok(await c.folder('..')===null&&await c.folder(dir)===null,'no folder outside the vault can be listed');
+const rec=await c.recent();
+ok(rec.some(n=>n.path==='USER.md')&&rec.some(n=>n.folder==='01-Projects/Cartera')&&!rec.some(n=>n.path.startsWith('.obsidian')),'recent notes come from the whole vault, without hidden folders');
+ok(!rec.some(n=>n.name==='enlace'&&n.path.includes('..')),'recent notes stay inside the vault');
+fs.rmSync(dir,{recursive:true,force:true});
+console.log(process.exitCode?'CARTERA CHECKS FAILED':'CARTERA CHECKS PASSED');

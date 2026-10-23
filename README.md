@@ -6,19 +6,40 @@ A personal operating system: an AI chief of staff that you talk to by voice, tex
 remembers what matters to you, helps you study with spaced repetition, and asks before anything that matters.
 It runs on your own computer, with your own Claude account. Your notes stay in your own folder.
 
-## Status
+## Download
 
-The first public release is on its way, for **macOS (Apple silicon)** and **Windows**.
-Press **Watch → Custom → Releases** (or Star) on this page to be told when it is out.
+Get the installer for your computer from **[Releases](https://github.com/kemet333/life-operatingsystem/releases/latest)**:
 
-Everything in one app, brand new and set up on first launch with your own name, projects and accounts:
+- **macOS** (Apple silicon): `life.operatingsystem-…-Mac.dmg`. The app is not notarized yet: the first time, right-click it
+  in Applications → **Open**, or allow it in System Settings → Privacy & Security.
+- **Windows** (x64): `life.operatingsystem-…-Windows.exe`. Windows SmartScreen may warn about an unknown publisher:
+  **More info → Run anyway**.
 
-- **Your chief of staff**: voice and text, with a natural voice, and the same assistant on Telegram.
+On first launch it asks your name, opens the Claude sign-in in your browser and, if you want, your notes folder and the
+code projects for the agent team.
+
+You need a **Claude account (Pro or Max)**. Optional: **Python 3** for the agent team, an **ElevenLabs** key for the natural
+voice (otherwise the system voice), a **Telegram** bot of your own, and **whisper.cpp** to dictate by voice.
+
+Everything in one app:
+
+- **Your chief of staff**: voice and text, and the same assistant on Telegram.
 - **A team of AI agents**: six departments that plan your projects every morning, build in their own branch,
   review each other and wait for your yes. One task per agent, a receipt for every change.
-- **Your day**: a short to-do every morning, your calendar, a day and week close, spaced-repetition review.
+- **Your day**: a short to-do every morning, a day and week close, spaced-repetition review.
 - **Your memory**: your own notes folder (Obsidian works) as long-term memory.
 - **Content**: a calendar of what goes out, with previews, and the trends that work in your niche.
+
+## Build it yourself
+
+```sh
+cd alfred-os && npm ci && cd ../mac/local-workspace && npm ci && cd ../../escritorio && npm install
+node preparar.mjs && npx electron-builder --mac   # or --win
+```
+
+Tests: `python -m unittest discover -s equipo` and the `*-checks.mjs` in `mac/local-workspace`. The folders:
+`alfred-os` (interface), `mac/local-workspace` (local server), `equipo` (agent team engine), `escritorio` (desktop app),
+`mac` (native macOS app, optional).
 
 ## Principles
 

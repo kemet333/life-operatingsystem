@@ -1,0 +1,38 @@
+/* Setup: the first-run steps of a brand-new copy (overlay) and the same settings as a panel in Entregas. */
+.jarvis .st-overlay,.jarvis .st-panel{--st-ink:#f2f3f5;--st-2:#a3a7b0;--st-3:#70757f;--st-sep:#ffffff12;--st-fill:#ffffff0d;--st-sel:#2c6fd6;--st-sel-soft:#2c6fd633;
+ font:13px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--st-ink)}
+.jarvis .st-overlay{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;background:#050507f2;backdrop-filter:blur(18px)}
+.jarvis .st-card{width:min(460px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:28px 28px 20px;border-radius:18px;background:#141519;box-shadow:0 0 0 1px #ffffff12,0 24px 70px #000a}
+.jarvis .st-step{margin:0;font-size:12px;color:var(--st-3);font-variant-numeric:tabular-nums}
+.jarvis .st-card h1{margin:6px 0 16px;font:600 22px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif}
+.jarvis .st-form{display:flex;flex-direction:column;gap:12px}
+.jarvis .st-form p{margin:0;color:var(--st-2)}
+.jarvis .st-form label{display:flex;flex-direction:column;gap:5px}
+.jarvis .st-form label span{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--st-3)}
+.jarvis .st-form label i{font-style:normal;color:#565b64}
+.jarvis .st-form input{width:100%;height:34px;padding:0 10px;border:0;border-radius:8px;background:var(--st-fill);color:var(--st-ink);font:13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;outline:none}
+.jarvis .st-pick{display:flex;gap:8px}.jarvis .st-pick input{flex:1;min-width:0}
+.jarvis .st-form input::placeholder{color:#565b64}
+.jarvis .st-form input:focus{box-shadow:0 0 0 3px var(--st-sel-soft),inset 0 0 0 1px var(--st-sel)}
+.jarvis .st-primary,.jarvis .st-secondary,.jarvis .st-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;border-radius:8px;font:500 13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;cursor:pointer}
+.jarvis .st-primary{background:var(--st-sel);color:#fff}
+.jarvis .st-primary:hover{background:#3a7de3}
+.jarvis .st-secondary{background:#ffffff14;color:var(--st-ink)}
+.jarvis .st-secondary:hover{background:#ffffff1f}
+.jarvis .st-ghost{background:transparent;color:var(--st-2)}
+.jarvis .st-ghost:hover{color:#fff}
+.jarvis .st-primary:disabled,.jarvis .st-secondary:disabled,.jarvis .st-ghost:disabled{opacity:.45;cursor:default}
+.jarvis .st-ok{display:flex;align-items:center;gap:6px;margin:0;color:#8fd3a5}
+.jarvis .st-err{margin:0;color:#f08b84}
+.jarvis .st-fine{margin:0;font-size:12px;color:var(--st-3)}
+.jarvis .st-list{display:flex;flex-direction:column;margin:0;padding:0;list-style:none;border-radius:10px;background:var(--st-fill)}
+.jarvis .st-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px}
+.jarvis .st-list li+li{border-top:1px solid var(--st-sep)}
+.jarvis .st-list div{display:flex;flex-direction:column;min-width:0}
+.jarvis .st-list small{font-size:12px;color:var(--st-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jarvis .st-sub{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--st-sep)}
+.jarvis .st-nav{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--st-sep)}
+.jarvis .st-panel{display:flex;flex-direction:column;gap:26px;max-width:560px}
+.jarvis .st-panel h2{margin:0 0 10px;font:600 15px -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .st-panel section>.st-primary{margin-top:10px}
+@media(max-width:520px){.jarvis .st-card{padding:22px 18px 16px}}

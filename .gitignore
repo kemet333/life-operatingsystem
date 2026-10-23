@@ -1,0 +1,8 @@
+node_modules/
+dist/
+recursos/
+.vite/
+*.app
+*.zip
+.DS_Store
+__pycache__/

@@ -1,0 +1,31 @@
+{
+  "_nota": "Qué modelo usa cada papel del equipo. Owner (o Alfred, con su permiso) puede cambiarlo aquí. 'auto' = según la dificultad que marca el planificador en cada tarea.",
+  "modelos": {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "codex": "gpt-6-astra", "codex-ligero": "gpt-5.6-terra"},
+  "roles": {
+    "planificador": {"modelo": "opus", "esfuerzo": "high"},
+    "constructor": {"modelo": "auto"},
+    "revisor": {"modelo": "auto"},
+    "retro": {"modelo": "sonnet", "esfuerzo": "medium"},
+    "mesa": {"modelo": "sonnet", "esfuerzo": "low"},
+    "sintesis": {"modelo": "sonnet", "esfuerzo": "medium"},
+    "respuestas": {"modelo": "sonnet", "esfuerzo": "low"}
+  },
+  "dificultad": {
+    "baja": {"modelo": "sonnet", "esfuerzo": "medium"},
+    "media": {"modelo": "sonnet", "esfuerzo": "high"},
+    "alta": {"modelo": "opus", "esfuerzo": "high"}
+  },
+  "codex": {
+    "desde": "2026-10-08 20:20",
+    "roles": ["constructor"],
+    "revisa_a_claude": true,
+    "_nota": "Desde el 08/10 a las 20:20 (Owner ya tiene el plan de Codex; estaba previsto el 10/10) Codex construye los primeros intentos con su propia tabla; revisa siempre el otro proveedor: Claude lo que hace Codex y, con revisa_a_claude, Codex lo que hace Claude (segundos intentos con Opus y cuando Claude cubre una caída de Codex). Si Codex falla (sin créditos, límite), construye Claude hasta la hora a la que Codex dice que vuelve (o hasta el final del día). Comprobar: equipo.py codex probar."
+  },
+  "dificultad_codex": {
+    "baja": {"modelo": "codex-ligero", "esfuerzo": "low"},
+    "media": {"modelo": "codex", "esfuerzo": "medium"},
+    "alta": {"modelo": "codex", "esfuerzo": "high"}
+  },
+  "freno": {"cinco_horas": 0.85, "semana": 0.85, "_nota": "Si el plan pasa de estos usos, el equipo no lanza trabajo nuevo hasta que se renueve, para que Alfred siempre pueda contestar."},
+  "subir_a_opus": "Tareas importantes o con archivos sensibles, segundo intento tras un fallo y revisiones de más de 400 líneas van siempre con Opus."
+}

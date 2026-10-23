@@ -1,0 +1,67 @@
+# Tests on macOS and Windows, then the desktop installers (.dmg for Apple Silicon, .exe for Windows x64).
+# Runs on demand and on version tags (v*); the installers are attached to the run (and to the release, for tags).
+name: compilar
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  probar:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '26.8.1'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: npm ci --no-audit --no-fund
+        working-directory: alfred-os
+      - run: npm ci --no-audit --no-fund
+        working-directory: mac/local-workspace
+      - name: Motor del equipo
+        run: python -m unittest discover -s equipo
+      - name: Servidor local
+        shell: bash
+        working-directory: mac/local-workspace
+        run: |
+          git config --global user.email ci@localhost && git config --global user.name ci
+          node build-server.mjs
+          for c in runtime telegram cartera contenido voice; do node $c-checks.mjs; done
+  instaladores:
+    needs: probar
+    strategy:
+      matrix:
+        include:
+          - {os: macos-latest, flag: --mac}
+          - {os: windows-latest, flag: --win}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '26.8.1'}
+      - run: npm ci --no-audit --no-fund
+        working-directory: alfred-os
+      - run: npm ci --no-audit --no-fund
+        working-directory: mac/local-workspace
+      - run: npm install --no-audit --no-fund
+        working-directory: escritorio
+      - run: node preparar.mjs && npx electron-builder ${{ matrix.flag }} --publish never
+        working-directory: escritorio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: instalador-${{ runner.os }}
+          path: |
+            escritorio/dist/*.dmg
+            escritorio/dist/*.exe
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            escritorio/dist/*.dmg
+            escritorio/dist/*.exe

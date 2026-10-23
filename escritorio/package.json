@@ -1,0 +1,77 @@
+{
+  "name": "escritorio",
+  "productName": "life.operatingsystem",
+  "version": "0.6.0",
+  "description": "Alfred y su equipo de agentes, en tu ordenador.",
+  "main": "main.mjs",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "preparar": "node preparar.mjs",
+    "start": "electron .",
+    "dist": "node preparar.mjs && electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.lifeoperatingsystem.app.escritorio",
+    "productName": "life.operatingsystem",
+    "files": [
+      "main.mjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "recursos",
+        "to": ".",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "icono.png",
+      "identity": "-",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Para hablar con Alfred mientras pulsas el botón del micrófono."
+      },
+      "hardenedRuntime": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icono.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-${version}-Windows.${ext}"
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-Mac.${ext}"
+    }
+  }
+}

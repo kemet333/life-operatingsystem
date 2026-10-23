@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>com.lifeoperatingsystem.app</string>
+<key>CFBundleName</key><string>life.operatingsystem</string>
+<key>CFBundleDisplayName</key><string>life.operatingsystem</string>
+<key>CFBundleExecutable</key><string>LifeOperatingSystem</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>0.6.0</string>
+<key>CFBundleVersion</key><string>7</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
+<key>LSMinimumSystemVersion</key><string>15.0</string>
+<key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+<key>NSHighResolutionCapable</key><true/>
+<key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
+<key>NSMicrophoneUsageDescription</key><string>life.operatingsystem usa el micrófono para las dos palmadas del ritual y para hablar con Alfred mientras mantienes la tecla. El audio no se guarda.</string>
+<key>NSCalendarsFullAccessUsageDescription</key><string>Alfred mira tu calendario de hoy para planear tu to-do alrededor de lo que ya tienes.</string>
+<key>NSCalendarsUsageDescription</key><string>Alfred mira tu calendario de hoy para planear tu to-do alrededor de lo que ya tienes.</string>
+<key>NSRemindersFullAccessUsageDescription</key><string>Alfred pone tu to-do del día en la lista «Alfred» de Recordatorios y sabe lo que tachas en el iPhone.</string>
+<key>NSRemindersUsageDescription</key><string>Alfred pone tu to-do del día en la lista «Alfred» de Recordatorios y sabe lo que tachas en el iPhone.</string>
+<key>NSSpeechRecognitionUsageDescription</key><string>Alfred transcribe lo que le dices mientras mantienes la tecla de hablar, en este Mac siempre que macOS lo permita. No se guarda el audio.</string>
+</dict></plist>

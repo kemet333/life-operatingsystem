@@ -1,0 +1,156 @@
+/* Equipo de agentes en Entregas: una acción principal (aprobar el lote) y una línea por proyecto. */
+.jarvis .eq{margin:4px 0 22px;padding:18px 20px;border:1px solid #ffffff12;border-radius:18px;background:linear-gradient(160deg,#151920d9,#0d1015e6);font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .eq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.jarvis .eq-head h2{margin:8px 0 0;font:650 21px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;letter-spacing:-.4px;color:#eef2f7}
+.jarvis .eq-ghost{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid #ffffff1c;border-radius:10px;font-size:13px;color:#c9d2de;flex:none}
+.jarvis .eq-ghost:hover{border-color:#ffffff38;color:#fff}
+.jarvis .eq-ghost:disabled{opacity:.5}
+.jarvis .eq-batch{margin-top:16px;padding-top:14px;border-top:1px solid #ffffff0d}
+.jarvis .eq-batch-project+.eq-batch-project{margin-top:14px}
+.jarvis .eq-batch h3{margin:0 0 6px;font:600 12px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.1em;text-transform:uppercase;color:#8a96a8}
+.jarvis .eq-batch ol{margin:0;padding:0;list-style:none}
+.jarvis .eq-batch li{display:flex;gap:11px;align-items:flex-start;padding:8px 0;transition:opacity .2s}
+.jarvis .eq-batch li.off{opacity:.45}
+.jarvis .eq-batch li>button{flex:none;padding:2px}
+.jarvis .eq-batch li i{display:grid;place-items:center;width:18px;height:18px;border-radius:6px;border:1px solid #ffffff38;color:#0b0d10;background:#eef2f7}
+.jarvis .eq-batch li.off i{background:transparent}
+.jarvis .eq-batch li span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.jarvis .eq-batch strong{font:550 14.5px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#e8edf4}
+.jarvis .eq-batch small{font-size:12.5px;line-height:1.4;color:#8a96a8}
+.jarvis .eq-batch em{font-size:11.5px;font-style:normal;color:#b9a77d}
+.jarvis .eq-launch{display:grid;gap:3px;margin:5px 0 1px}
+.jarvis .eq-launch div{display:flex;gap:7px;min-width:0}
+.jarvis .eq-launch dt{flex:none;font:500 10.5px/1.4 ui-monospace,SFMono-Regular,monospace;letter-spacing:.04em;color:#7f8b9d}
+.jarvis .eq-launch dd{min-width:0;margin:0;font-size:12.5px;line-height:1.4;color:#c9d2de}
+.jarvis .eq-batch .eq-decide{color:#c9d2de}
+.jarvis .eq-approve{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:11px 18px;border-radius:12px;background:#eef2f7;color:#0b0d10;font:600 14px -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .eq-approve:disabled{opacity:.45}
+.jarvis .eq-fine{margin:10px 0 0;font-size:12px;line-height:1.45;color:#6f7b8d}
+.jarvis .eq-fine code{font:11.5px ui-monospace,SFMono-Regular,monospace;color:#9aa6b8}
+.jarvis .eq-projects{margin:14px 0 0;padding:0;list-style:none;border-top:1px solid #ffffff0d}
+.jarvis .eq-row{display:grid;grid-template-columns:8px minmax(110px,auto) minmax(0,1fr) auto 14px;align-items:center;gap:10px;width:100%;padding:11px 2px;border-bottom:1px solid #ffffff0a;text-align:left;color:#8a96a8}
+.jarvis .eq-row:hover{color:#c9d2de}
+.jarvis .eq-dot{width:7px;height:7px;border-radius:50%;background:#5f6b7c}
+.jarvis .eq-projects li.busy .eq-dot{background:#86c79b;box-shadow:0 0 8px #86c79b99;animation:eq-pulse 1.8s ease-in-out infinite}
+.jarvis .eq-name{font:600 13.5px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#e8edf4}
+.jarvis .eq-line{min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jarvis .eq-line strong{font-weight:550;color:#dfe6ef}
+.jarvis .eq-counts{display:flex;gap:8px;font:11.5px ui-monospace,SFMono-Regular,monospace}
+.jarvis .eq-counts b{font-weight:500;color:#9aa6b8}.jarvis .eq-counts b.warn{color:#e3c98a}
+.jarvis .eq-detail{padding:4px 0 12px 18px}
+.jarvis .eq-detail p{display:flex;flex-direction:column;gap:2px;margin:8px 0 0;font-size:13px;color:#c9d2de}
+.jarvis .eq-detail small{font-size:12px;line-height:1.4;color:#7f8b9d}
+.jarvis .eq-blocked strong{color:#ecd6a0}
+.jarvis .eq-detail .eq-ghost{margin-top:10px}
+.jarvis .eq-notice{margin:12px 0 0;font-size:13px;color:#c9d2de}
+@keyframes eq-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@media(max-width:700px){.jarvis .eq-row{grid-template-columns:8px minmax(0,1fr) auto 14px}.jarvis .eq-line{grid-column:2 / span 3;order:5}}
+@media(prefers-reduced-motion:reduce){.jarvis .eq-projects li.busy .eq-dot{animation:none}}
+.jarvis .eq-lessons{margin-top:10px;font-size:12.5px;color:#9aa6b8}
+.jarvis .eq-lessons summary{cursor:pointer;width:max-content;color:#c9d2de}
+.jarvis .eq-lessons ul{margin:8px 0 0;padding:0;list-style:none}
+.jarvis .eq-lessons li{display:flex;gap:8px;padding:5px 0;line-height:1.45}
+.jarvis .eq-lessons b{flex:none;min-width:86px;font:500 10.5px/1.9 ui-monospace,SFMono-Regular,monospace;text-transform:uppercase;letter-spacing:.06em;color:#7f8b9d}
+.jarvis .eq-mesa{margin-top:18px;padding-top:16px;border-top:1px solid #ffffff0d}
+.jarvis .eq-mesa-summary{margin:8px 0 0;font:500 14.5px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#e1e7ef;text-wrap:pretty}
+.jarvis .eq-foryou{margin-top:12px;padding:12px 14px;border-radius:12px;background:#e3c98a0b;box-shadow:inset 2px 0 0 #e3c98a}
+.jarvis .eq-foryou h3{margin:0 0 6px;font:600 11px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.1em;text-transform:uppercase;color:#c9b482}
+.jarvis .eq-foryou p{display:flex;flex-direction:column;gap:2px;margin:8px 0 0;font-size:13px;line-height:1.45;color:#dfe6ef}
+.jarvis .eq-foryou b{font:600 11.5px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#ecd6a0}
+.jarvis .eq-thread{margin-top:12px;font-size:13px}
+.jarvis .eq-thread summary{cursor:pointer;width:max-content;color:#c9d2de}
+.jarvis .eq-thread ol{margin:10px 0 0;padding:0;list-style:none;max-height:360px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#ffffff1c transparent}
+.jarvis .eq-thread li{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-bottom:1px solid #ffffff08}
+.jarvis .eq-thread li.mine span{color:#ecd6a0}
+.jarvis .eq-thread small{font-size:11.5px;color:#7f8b9d}.jarvis .eq-thread small b{color:#c9d2de;font-weight:600}
+.jarvis .eq-thread span{line-height:1.45;color:#dfe6ef;text-wrap:pretty}
+.jarvis .eq-compose{display:flex;gap:8px;margin-top:14px}
+.jarvis .eq-compose select,.jarvis .eq-compose input{height:38px;padding:0 11px;border:1px solid #ffffff1c;border-radius:10px;background:#ffffff08;color:#e8edf4;font:14px -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .eq-compose input{flex:1;min-width:0}
+.jarvis .eq-compose button{height:38px;padding:0 16px;border-radius:10px;background:#eef2f7;color:#0b0d10;font:600 13.5px -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .eq-compose button:disabled{opacity:.45}
+.jarvis .eq-dept-talk{margin-top:16px}
+.jarvis .eq-dept-talk h3{margin:0;font:600 10.5px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.12em;color:#7f8b9d}
+.jarvis .eq-dept-talk p{display:flex;flex-direction:column;gap:3px;margin:10px 0 0;font-size:12.5px;line-height:1.45;color:#c9d2de}
+.jarvis .eq-dept-talk small{font-size:11px;color:#6f7b8d}
+@media(max-width:700px){.jarvis .eq-compose{flex-wrap:wrap}.jarvis .eq-compose select{flex:1 1 100%}}
+.jarvis .eq-foryou p span,.jarvis .eq-dept-talk p span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.jarvis .eq-hermes,.jarvis .eq-telegram{margin-top:18px;padding-top:16px;border-top:1px solid #ffffff0d}
+.jarvis .eq-hermes ul{margin:8px 0 0;padding:0;list-style:none}
+.jarvis .eq-hermes li{display:flex;flex-direction:column;gap:2px;padding:7px 0;font-size:13px;color:#9aa6b8}
+.jarvis .eq-hermes li strong{font-weight:600;color:#e8edf4}
+.jarvis .eq-hermes li small{font-size:12px;line-height:1.4;color:#7f8b9d}
+.jarvis .eq-hermes-warn{margin:8px 0 0;padding:9px 12px;border-radius:10px;background:#e3c98a0b;box-shadow:inset 2px 0 0 #e3c98a;font-size:13px;color:#ecd6a0}
+.jarvis .eq-telegram p{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:8px 0 0;font-size:13px;line-height:1.45;color:#c9d2de}
+.jarvis .eq-telegram code{font:11.5px ui-monospace,SFMono-Regular,monospace;color:#dfe6ef;background:#ffffff0d;padding:1px 5px;border-radius:5px}
+.jarvis .eq-token{display:flex;flex-direction:column;gap:8px;margin:8px 0 0;font-size:13px;line-height:1.45;color:#c9d2de}
+.jarvis .eq-token input{height:32px;padding:0 10px;border:0;border-radius:8px;background:#ffffff0d;color:#f2f3f5;font:12.5px ui-monospace,SFMono-Regular,monospace;outline:none}
+.jarvis .eq-token input:focus{box-shadow:0 0 0 3px #2c6fd633,inset 0 0 0 1px #2c6fd6}
+.jarvis .eq-token button{align-self:flex-start}.jarvis .eq-token small{color:#8e98a6}
+.jarvis .eq-code{font:600 15px ui-monospace,SFMono-Regular,monospace;letter-spacing:.12em;color:#fff}
+@media(max-width:700px){.jarvis .eq-telegram p{flex-direction:column;align-items:flex-start}}
+/* Checklist del lote: ✓ hecha · ▶ trabajando · ○ en cola · ✕ bloqueada, siempre visible. */
+.jarvis .eq-steps{margin:0 0 10px;padding:0 0 0 18px;list-style:none}
+.jarvis .eq-step{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:4px 0;font-size:13px;line-height:1.4;color:#8a96a8}
+.jarvis .eq-step i{font-style:normal;font-size:12px;text-align:center}
+.jarvis .eq-step span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jarvis .eq-step small{font:11.5px ui-monospace,SFMono-Regular,monospace;color:#6f7b8d}
+.jarvis .eq-step.hecha i{color:#86c79b}.jarvis .eq-step.hecha span{color:#9aa6b8}
+.jarvis .eq-step.trabajando i,.jarvis .eq-step.trabajando span{color:#eef2f7;font-weight:550}.jarvis .eq-step.trabajando i{animation:eq-pulse 1.8s ease-in-out infinite}
+.jarvis .eq-step.bloqueada i,.jarvis .eq-step.bloqueada small{color:#e3c98a}
+@media(prefers-reduced-motion:reduce){.jarvis .eq-step.trabajando i{animation:none}}
+
+/* ---- Entregas v2: estado general, «Para ti», una tarjeta por proyecto y secciones plegadas ---- */
+.jarvis .eq{padding:22px 24px 10px}
+.jarvis .eq-head h2{font-size:23px}
+.jarvis .eq-sub{margin:6px 0 0;font-size:14px;color:#9aa6b8}
+.jarvis .eq-you{margin-top:18px;padding:14px 16px;border-radius:14px;background:#e3c98a0a;box-shadow:inset 0 0 0 1px #e3c98a26}
+.jarvis .eq-you h3{margin:0;font:600 11px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.12em;color:#c9b482}
+.jarvis .eq-you .eq-batch{margin-top:10px;padding-top:0;border-top:0}
+.jarvis .eq-you h4{margin:12px 0 4px;font:600 12px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.08em;text-transform:uppercase;color:#8a96a8}
+.jarvis .eq-todo{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:10px 0 0;font-size:13.5px;line-height:1.45;color:#c9d2de}
+.jarvis .eq-todo b{font-weight:600;color:#ecd6a0}
+.jarvis .eq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px;margin-top:18px}
+.jarvis .eq-card{display:flex;flex-direction:column;min-width:0;padding:16px 16px 12px;border-radius:14px;background:#ffffff05;box-shadow:inset 0 0 0 1px #ffffff0f}
+.jarvis .eq-card.busy{box-shadow:inset 0 0 0 1px #86c79b40}
+.jarvis .eq-card header{display:flex;align-items:center;gap:9px}
+.jarvis .eq-card h3{margin:0;font:600 15px/1.2 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#eef2f7}
+.jarvis .eq-card.busy .eq-dot{background:#86c79b;box-shadow:0 0 8px #86c79b99;animation:eq-pulse 1.8s ease-in-out infinite}
+.jarvis .eq-card-sub{margin:5px 0 10px 16px;font-size:12.5px;color:#8a96a8}
+.jarvis .eq-card .eq-steps{margin:0;padding:0;flex:1}
+.jarvis .eq-card .eq-step{grid-template-columns:16px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;row-gap:1px;padding:6px 0;border-top:1px solid #ffffff08}
+.jarvis .eq-card .eq-step i{grid-row:1 / span 2;padding-top:1px}
+.jarvis .eq-card .eq-step span{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.4}
+.jarvis .eq-card .eq-step small{grid-column:2}
+.jarvis .eq-card .eq-blocked{margin:8px 0 0;display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:#c9d2de}
+.jarvis .eq-more{margin-top:8px;font-size:12.5px;color:#7f8b9d}
+.jarvis .eq-more summary{cursor:pointer;width:max-content;padding:4px 0;color:#8a96a8}
+.jarvis .eq-more summary:hover{color:#c9d2de}
+.jarvis .eq-more .eq-ghost{margin-top:8px}
+.jarvis .eq-lessons-list{margin:8px 0 0;padding:0;list-style:none}
+.jarvis .eq-lessons-list li{display:flex;flex-direction:column;gap:1px;padding:5px 0;line-height:1.45;color:#9aa6b8}
+.jarvis .eq-lessons-list b{font:500 10.5px/1.6 ui-monospace,SFMono-Regular,monospace;text-transform:uppercase;letter-spacing:.06em;color:#6f7b8d}
+.jarvis .eq-section{margin-top:12px;border-top:1px solid #ffffff0d}
+.jarvis .eq-section>summary{display:flex;align-items:baseline;gap:12px;padding:13px 2px;cursor:pointer;list-style:none;font-size:13.5px;color:#8a96a8}
+.jarvis .eq-section>summary::-webkit-details-marker{display:none}
+.jarvis .eq-section>summary::before{content:'›';display:inline-block;width:10px;color:#6f7b8d;transition:transform .2s}
+.jarvis .eq-section[open]>summary::before{transform:rotate(90deg)}
+.jarvis .eq-section>summary b{font-weight:600;color:#e8edf4}
+.jarvis .eq-section>summary:hover b{color:#fff}
+.jarvis .eq-section>.eq-mesa{margin-top:0;padding-top:0;border-top:0}
+.jarvis .eq-section .eq-mesa,.jarvis .eq-section>ul,.jarvis .eq-section>p,.jarvis .eq-section>details{margin-left:22px}
+.jarvis .eq-hermes,.jarvis .eq-telegram{padding-top:0}
+.jarvis .eq-telegram p{margin-top:0;padding-bottom:12px}
+/* Encargos sueltos del circuito anterior, plegados debajo del equipo */
+.jarvis .d-legacy{margin:6px 0 30px;border-top:1px solid #ffffff0d}
+.jarvis .d-legacy>summary{display:flex;align-items:baseline;gap:12px;padding:16px 2px;cursor:pointer;list-style:none;font-size:13.5px;color:#8a96a8}
+.jarvis .d-legacy>summary::-webkit-details-marker{display:none}
+.jarvis .d-legacy>summary::before{content:'›';display:inline-block;width:10px;color:#6f7b8d;transition:transform .2s}
+.jarvis .d-legacy[open]>summary::before{transform:rotate(90deg)}
+.jarvis .d-legacy>summary b{font-weight:600;font-size:15px;color:#e8edf4}
+@media(max-width:700px){.jarvis .eq{padding:18px 16px 8px}.jarvis .eq-head{flex-wrap:wrap}}
+.jarvis .eq-todo{flex-direction:column}
+.jarvis .eq-todo ul{margin:2px 0 0;padding:0;list-style:none;width:100%}
+.jarvis .eq-todo li{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:#dfe6ef}
+.jarvis .eq-todo li small{font-size:12.5px;color:#9aa6b8}
+.jarvis .eq-todo code{font:11.5px ui-monospace,SFMono-Regular,monospace;color:#c9d2de}

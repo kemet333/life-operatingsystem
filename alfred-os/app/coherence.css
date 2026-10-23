@@ -1,0 +1,74 @@
+/* ---------- One visual language for the whole Mac app (the owner, 15/10/2026) ----------
+   «No hay coherencia: Alfred en negro, otras secciones translúcidas y en medio cards que parecen pegotes.»
+   So, everywhere (Alfred included): one smoked-glass background over the native window glass, one kind of glass panel,
+   nothing opaque inside a panel (only hairline separators), and cards as a faint veil with a hairline, never slabs.
+   Loaded last; scoped to the native app (the web copy has no window glass behind it). */
+.jarvis.native-host{
+ --g-tint:rgba(8,9,12,.66);
+ --g-panel:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.025));
+ --g-line:rgba(255,255,255,.085);
+ --g-hi:inset 0 1px 0 rgba(255,255,255,.07);
+ --g-fill:rgba(255,255,255,.035);
+ --g-fill-hover:rgba(255,255,255,.06);
+ --g-select:rgba(255,255,255,.1);
+ --g-shadow:0 24px 60px rgba(0,0,0,.32);
+ --g-blur:blur(30px) saturate(1.35);
+}
+
+/* The background: the same smoked glass in every section. The tint itself is painted by the window (WindowGlass in
+   MainView.swift) so the title bar and the page are one surface; the page only adds a faint light in the middle. */
+html:has(.jarvis.native-host),html:has(.jarvis.native-host) body{background:transparent!important}
+.jarvis.native-host,.jarvis.native-host:not(.view-now){background:radial-gradient(ellipse at 50% 36%,rgba(80,88,110,.12),transparent 64%)!important}
+.jarvis.native-host .j-grid{opacity:.04}
+.jarvis.native-host .s-toolbar,.jarvis.native-host:not(.view-now) .s-toolbar{background:transparent!important}
+
+/* One glass panel. */
+.jarvis.native-host :is(.j-workspace.ob,.pt-panel,.j-chat,.j-dept-panel,.j-detail,.j-request-modal,.j-node-card,.j-command-bar,.j-map-controls){
+ background:var(--g-panel)!important;border-color:transparent!important;
+ box-shadow:0 0 0 1px var(--g-line),var(--g-hi),var(--g-shadow)!important;
+ -webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+}
+.jarvis.native-host :is(.s-navigation,.s-live){background:var(--g-fill)!important;box-shadow:0 0 0 1px var(--g-line),var(--g-hi)!important;-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur)}
+
+/* Inside a panel: no surfaces of their own, only hairlines. */
+.jarvis.native-host :is(.ob-side,.ob-main,.ob-inspector,.ob-list-head,.ob-sec h2,.pt-panel-head,.j-chat-header,.j-chat-foot){background:transparent!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+.jarvis.native-host .ob-side{border-right:1px solid var(--g-line)}
+.jarvis.native-host .ob-inspector{border-left:1px solid var(--g-line)}
+.jarvis.native-host .ob-main{border-right:0}
+
+/* Cards: a faint veil with a hairline. */
+.jarvis.native-host :is(.ob-next,.ob-group-box,.pt-card,.pt-kpi>div,.mm-folder:hover,.eq-card,.sa-check){background:var(--g-fill)!important;box-shadow:0 0 0 1px var(--g-line)!important;border-color:transparent!important}
+.jarvis.native-host .ob-next-text span{color:#d9b977}
+
+/* Selection and hover: soft white, not a slab of blue. Buttons keep the one accent. */
+.jarvis.native-host .ob-row:hover,.jarvis.native-host .ob-nav:hover{background:var(--g-fill-hover)}
+.jarvis.native-host :is(.ob-row.sel,.ob-nav.on){background:var(--g-select)!important;color:inherit!important}
+.jarvis.native-host :is(.ob-row.sel,.ob-nav.on) :is(small,b,time){color:#aeb4bd!important}
+.jarvis.native-host .ob-select,.jarvis.native-host .ob-search{background:var(--g-fill)!important;box-shadow:0 0 0 1px var(--g-line)}
+
+/* No CSS backdrop blur anywhere in the Mac app: the web view cannot see the desktop behind it, so a backdrop-filter
+   over the transparent page renders as a dark slab — the «card that breaks everything». The window glass already blurs
+   the desktop; panels are only a faint light veil with a hairline, so the glass reads through them like everywhere else. */
+.jarvis.native-host,.jarvis.native-host *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.jarvis.native-host{--g-panel:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.03));--g-shadow:0 18px 50px rgba(0,0,0,.18)}
+
+/* One kind of primary button everywhere, as on the Alfred screen and in the references: light on the glass. */
+.jarvis.native-host :is(.ob-primary,.pt-primary,.j-primary,.eq-approve,.f-primary){background:#eceef2!important;color:#0b0c0f!important;box-shadow:none!important;border:0!important}
+.jarvis.native-host :is(.ob-primary,.pt-primary,.j-primary,.eq-approve,.f-primary):hover{background:#fff!important}
+.jarvis.native-host :is(.ob-primary,.pt-primary,.j-primary,.eq-approve,.f-primary) svg{color:#0b0c0f}
+.jarvis.native-host :is(.ob-primary,.pt-primary,.j-primary,.eq-approve,.f-primary):disabled{background:#ffffff1f!important;color:#ffffff66!important}
+
+/* Calm mode must be obvious: when it is on, the feather becomes a labelled capsule (it freezes the orb). */
+.jarvis .s-tools button.s-calm.selected{width:auto;height:30px;padding:0 12px 0 10px;gap:7px;display:flex;align-items:center;border-radius:99px;background:#e3c98a1f!important;box-shadow:inset 0 0 0 1px #e3c98a55!important;color:#e9d29b!important;font:500 11.5px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;white-space:nowrap}
+@media(max-width:1180px){.jarvis .s-tools button.s-calm.selected span{display:none}.jarvis .s-tools button.s-calm.selected{width:30px;padding:0;justify-content:center}}
+@media(max-width:1599px){.jarvis .s-tools:has(.s-calm.selected) .s-live small{display:none}}
+
+/* Panels that float over other content (the conversation over Equipo, a department or project panel over its map, cards
+   and forms) must read on their own: near-opaque dark glass that blurs the page beneath it. Here the CSS blur works,
+   because what lies beneath is the page itself. Docked panels (Entregas, Memoria…) stay a light veil over the window glass. */
+/* Extra .jarvis classes: this must outrank the docked-panel rule above, whose :is() carries .j-workspace.ob. */
+.jarvis.jarvis.jarvis.native-host :is(.j-chat,.j-dept-panel,.j-detail,.j-request-modal,.j-node-card,.pt-panel){
+ background:linear-gradient(160deg,rgba(30,32,38,.94),rgba(17,18,22,.96))!important;
+ -webkit-backdrop-filter:blur(24px) saturate(1.3)!important;backdrop-filter:blur(24px) saturate(1.3)!important;
+ box-shadow:0 0 0 1px var(--g-line),var(--g-hi),0 30px 80px rgba(0,0,0,.45)!important;
+}

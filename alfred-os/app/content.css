@@ -1,0 +1,63 @@
+/* Contenido: calendar rows, the phone-sized preview of a reel and the profile preview. Built on board.css (Entregas). */
+.jarvis .ct-state{color:var(--t)}
+.jarvis .ob-row.sel .ct-state{color:#fff}
+.jarvis .ct-has-video{width:6px;height:6px;border-radius:50%;background:var(--ob-3);margin-left:6px}
+.jarvis .ob-row.sel .ct-has-video{background:#fff}
+.jarvis .ct .ob-row-meta{display:flex;align-items:center}
+.jarvis .ct .ob-pill.status.plain{padding-left:10px;color:var(--t);background:color-mix(in srgb,var(--t) 12%,transparent)}
+
+.jarvis .ct-preview{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 4px}
+.jarvis .ct-phone{position:relative;width:min(240px,70%);aspect-ratio:9/16;border-radius:22px;overflow:hidden;background:#050506;box-shadow:0 0 0 1px #ffffff14,0 14px 40px #0008}
+.jarvis .ct-phone video,.jarvis .ct-phone img{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.jarvis .ct-phone-text{display:flex;align-items:center;justify-content:center;height:100%;padding:22px;background:linear-gradient(180deg,#17181d,#0b0b0e)}
+.jarvis .ct-phone-text p{margin:0;font:600 15px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;color:#f2f3f5;text-align:center;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:14}
+.jarvis .ct-openings{max-width:100%}
+
+.jarvis .ct-when{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px}
+.jarvis .ct-when input{flex:1;min-width:150px;height:30px;padding:0 9px;border:0;border-radius:7px;background:#ffffff0d;color:var(--ob-ink);font:13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark;outline:none}
+.jarvis .ct-when input:focus{box-shadow:0 0 0 3px var(--ob-sel-soft),inset 0 0 0 1px var(--ob-sel)}
+.jarvis .ct-ghost{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:7px;background:var(--ob-fill);color:var(--ob-2);font:500 12px -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.jarvis .ct-ghost:hover{color:#fff;background:#ffffff14}.jarvis .ct-ghost:disabled{opacity:.5}
+.jarvis .ct-h4{display:flex;align-items:center;justify-content:space-between}
+.jarvis .ct-h4 .ct-ghost{height:22px;font-size:11.5px}
+.jarvis .ct-msg{margin:10px 2px 0}
+.jarvis .ct-source{margin-top:16px}
+
+.jarvis .ct-profile{margin:14px 0 6px;padding:16px;border-radius:14px;background:#17181c;box-shadow:inset 0 0 0 1px #ffffff0d}
+.jarvis .ct-profile-head{display:flex;align-items:center;gap:12px}
+.jarvis .ct-profile-head div{display:flex;flex-direction:column;min-width:0}
+.jarvis .ct-profile-head b{font-size:14px;font-weight:600;color:var(--ob-ink)}
+.jarvis .ct-profile-head span{font-size:13px;color:var(--ob-2)}
+.jarvis .ct-avatar{display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:50%;background:#0a0a0c;box-shadow:0 0 0 1px #ffffff1f;font:600 20px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#f2f3f5}
+.jarvis .ct-bio{margin:12px 0 0;white-space:pre-wrap;font-size:13px;color:var(--ob-ink)}
+.jarvis .ct-bio i{color:var(--ob-3)}
+.jarvis .ct-link{margin:4px 0 0;font-size:13px;color:#a7c8ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jarvis .ct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:14px -16px -16px;border-radius:0 0 14px 14px;overflow:hidden}
+.jarvis .ct-tile{position:relative;aspect-ratio:3/4;background:#0a0a0c;overflow:hidden}
+.jarvis .ct-tile img,.jarvis .ct-tile video{width:100%;height:100%;object-fit:cover;display:block}
+.jarvis .ct-tile em{position:absolute;left:6px;bottom:6px;padding:2px 6px;border-radius:5px;background:#000a;font:500 10.5px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-style:normal;color:#fff}
+
+.jarvis .ct-form{padding:4px 0}
+.jarvis .ct-field{display:flex;flex-direction:column;gap:5px;padding:9px 12px}
+.jarvis .ct-field+.ct-field{border-top:1px solid var(--ob-sep)}
+.jarvis .ct-field span{display:flex;justify-content:space-between;font-size:12px;color:var(--ob-3)}
+.jarvis .ct-field i{font-style:normal;font-variant-numeric:tabular-nums}
+.jarvis .ct-field input,.jarvis .ct-field textarea{width:100%;padding:6px 8px;border:0;border-radius:7px;background:#ffffff0d;color:var(--ob-ink);font:13px/1.4 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;outline:none;resize:vertical}
+.jarvis .ct-field input:focus,.jarvis .ct-field textarea:focus{box-shadow:0 0 0 3px var(--ob-sel-soft),inset 0 0 0 1px var(--ob-sel)}
+
+/* Hoy: three openings side by side, the views list of the winner */
+.jarvis .ct-static{cursor:default}
+.jarvis .ct-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+.jarvis .ct-trio-item{display:flex;flex-direction:column;gap:6px;min-width:0}
+.jarvis .ct-phone-sm{width:100%;border-radius:14px}
+.jarvis .ct-trio-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px;font-size:11.5px;color:var(--ob-2)}
+.jarvis .ct-trio-foot .ct-ghost{height:22px;padding:0 7px;font-size:11px}
+.jarvis .ct-trio-foot b{font-weight:500}
+.jarvis .ct-vrow{display:grid;grid-template-columns:minmax(0,1fr) 92px auto;align-items:center;gap:10px;padding:9px 12px}
+.jarvis .ct-vrow+.ct-vrow{border-top:1px solid var(--ob-sep)}
+.jarvis .ct-vname{display:flex;flex-direction:column;min-width:0}
+.jarvis .ct-vname b{font-weight:500;font-size:13px;color:var(--ob-ink)}
+.jarvis .ct-vname small{font-size:12px;color:var(--ob-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jarvis .ct-vrow input{height:30px;padding:0 9px;border:0;border-radius:7px;background:#ffffff0d;color:var(--ob-ink);font:13px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-variant-numeric:tabular-nums;color-scheme:dark;outline:none;width:100%}
+.jarvis .ct-vrow input:focus{box-shadow:0 0 0 3px var(--ob-sel-soft),inset 0 0 0 1px var(--ob-sel)}
+@media(max-width:520px){.jarvis .ct-vrow{grid-template-columns:minmax(0,1fr) 80px}.jarvis .ct-vrow>:last-child{grid-column:1/-1}}

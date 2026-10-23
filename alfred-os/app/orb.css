@@ -1,0 +1,4 @@
+/* Canvas ornament only; layout and the accessible trigger belong to its host. */
+.jarvis canvas.j-iris-canvas{display:block;max-width:none;flex-shrink:0;pointer-events:none;border:0;background:none;border-radius:0;filter:none;transition:none}
+.jarvis .j-orb-button:hover canvas.j-iris-canvas{filter:none}
+.jarvis canvas.j-iris-canvas.iris-fallback{border-radius:50%;background:radial-gradient(circle,transparent 13%,#f4eee2b3 15%,#111318 18%,transparent 20%),repeating-conic-gradient(from 20deg,#d1d5d944 0deg,transparent 8deg,transparent 19deg,#ebe6dd66 20deg);mask-image:radial-gradient(circle,#000 15%,#000 28%,transparent 55%)}

@@ -1,0 +1,78 @@
+/* Shell común de the owner OS: navegación, aviso de decisiones y barra de Alfred compacta en las pantallas de trabajo.
+   Se carga la última; la pantalla Alfred (view-now) no cambia. */
+
+/* Aviso en «Entregas»: cuántas decisiones te esperan */
+.jarvis .s-navigation .s-badge{display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:2px;padding:0 4px;border-radius:999px;background:#e8c46b;color:#141414;font:650 10px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+
+/* Ventana estrecha: la navegación pasa a iconos para no chocar con los botones de la derecha */
+@media(max-width:640px){
+ .jarvis.native-host .s-navigation button>span{display:none}
+ .jarvis.native-host .s-navigation button>svg{display:block}
+ .jarvis.native-host .s-navigation{right:auto;left:14px;gap:2px}
+ .jarvis.native-host .s-navigation button{flex:none;padding:8px 11px}
+ .jarvis.native-host .s-navigation .s-badge{position:absolute;top:2px;right:2px;margin:0}
+}
+
+/* Pantallas de trabajo: Alfred se queda a mano pero compacto (⌘K lo despliega) y el contenido gana espacio */
+.jarvis:not(.view-now) .j-quick-commands,.jarvis:not(.view-now) .j-dock-caption{display:none}
+.jarvis:not(.view-now) .j-command-area{width:300px;bottom:16px;transition:width .28s cubic-bezier(.2,.85,.2,1)}
+.jarvis:not(.view-now) .j-command-area:focus-within,.jarvis:not(.view-now).chat-is-open .j-command-area{width:min(620px,calc(100% - 40px))}
+.jarvis:not(.view-now) .j-command-bar{min-height:44px;box-shadow:0 10px 30px #0008,0 0 0 1px #ffffff12}
+.jarvis:not(.view-now) .j-command-area:not(:focus-within) .j-shortcut{opacity:.8}
+.jarvis:is(.view-map,.view-projects,.view-activity,.view-memory) .j-stage{bottom:74px}
+@media(prefers-reduced-motion:reduce){.jarvis:not(.view-now) .j-command-area{transition:none}}
+
+/* Equipo: el estado real del trabajo encima del mapa aprobado */
+.jarvis .j-department.working .j-dept-outer{animation:dept-breathe 2.6s ease-in-out infinite}
+@keyframes dept-breathe{0%,100%{stroke-opacity:.35;stroke-width:1}50%{stroke-opacity:1;stroke-width:2.2}}
+.jarvis .j-dept-count text{font:650 11px -apple-system,BlinkMacSystemFont,system-ui,sans-serif;fill:#0b0d10;pointer-events:none}
+.jarvis.calm .j-department.working .j-dept-outer{animation:none;stroke-opacity:.9}
+@media(prefers-reduced-motion:reduce){.jarvis .j-department.working .j-dept-outer{animation:none}}
+.jarvis .eq-dept-work{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.jarvis .eq-dept-work p{display:flex;flex-direction:column;gap:3px;margin:0;font-size:13px;line-height:1.45;color:#dfe6ef}
+.jarvis .eq-dept-work small{font:600 10.5px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;letter-spacing:.08em;color:#7f8b9d}
+.jarvis .eq-dept-work em{font-style:normal;font-size:12px;color:#7f8b9d}
+@media(max-width:640px){.jarvis .j-map-heading h1{font-size:22px!important;line-height:1.2}.jarvis .j-map-heading .j-map-heading-sub{display:none}}
+
+/* Alfred's visible steps while he works (one plain line per tool call; the last one is live). */
+.jarvis .j-steps{list-style:none;margin:2px 0 16px;padding:0 0 0 2px;display:flex;flex-direction:column;gap:7px;font:10.5px/1.5 ui-monospace,SFMono-Regular,monospace;color:#8f839c}
+.jarvis .j-steps li{display:flex;align-items:center;gap:9px;animation:j-step-in .25s ease-out}
+.jarvis .j-steps li:before{content:"";width:5px;height:5px;border-radius:50%;flex-shrink:0;background:#8f839c66}
+.jarvis .j-steps li.now{color:#d8cbe2}
+.jarvis .j-steps li.now:before{background:#d4ae70;animation:j-active-pulse 1.4s infinite}
+@keyframes j-step-in{from{opacity:0;transform:translateY(3px)}}
+@media(prefers-reduced-motion:reduce){.jarvis .j-steps li,.jarvis .j-steps li.now:before{animation:none}}
+
+/* Live activity capsule: only when the team is really working; one click opens Entregas. */
+.jarvis .s-tools button.s-live{width:auto;height:30px;max-width:300px;display:flex;align-items:center;gap:8px;padding:0 12px 0 11px;margin-right:6px;border-radius:99px;background:#ffffff08;box-shadow:inset 0 0 0 1px #ffffff14;color:#c9cfd8;font:500 11.5px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;white-space:nowrap}
+.jarvis .s-tools button.s-live:hover{background:#ffffff12;color:#fff}
+.jarvis .s-live i{width:6px;height:6px;border-radius:50%;background:#7fd6a0;box-shadow:0 0 8px #7fd6a080;flex-shrink:0;animation:s-live-pulse 1.8s ease-in-out infinite}
+.jarvis .s-live span{overflow:hidden;text-overflow:ellipsis}
+.jarvis .s-live em{font-style:normal;color:#8d97a5;font-variant-numeric:tabular-nums}
+.jarvis .s-live b{font-weight:600;font-size:10.5px;color:#8d97a5}
+@keyframes s-live-pulse{50%{opacity:.4}}
+.jarvis .s-live small{font-size:inherit}
+@media(max-width:1399px){.jarvis .s-live small{display:none}}
+@media(max-width:1180px){.jarvis .s-tools button.s-live{width:30px;padding:0;justify-content:center}.jarvis .s-live span,.jarvis .s-live b{display:none}}
+@media(prefers-reduced-motion:reduce){.jarvis .s-live i{animation:none}}
+@media(max-width:959px){.jarvis .s-tools button.s-live{display:none}}
+
+
+/* Conversation timeline (the owner's chat reference): each step on a thin vertical line with its duration; once the reply
+   is done it folds into one line ("3 pasos · 12 s · Sonnet 5.5"). The pill in the header says which model is on. */
+.jarvis .j-trace{margin:2px 0 14px}
+.jarvis .j-trace summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font:10.5px/1.4 ui-monospace,SFMono-Regular,monospace;color:#8f97a3}
+.jarvis .j-trace summary::-webkit-details-marker{display:none}
+.jarvis .j-trace summary:before{content:"";width:6px;height:6px;border-radius:50%;background:#d4ae70}
+.jarvis .j-trace summary:hover{color:#d9dee6}
+.jarvis .j-trace.done[open] summary{margin-bottom:8px}
+.jarvis .j-trace-steps{list-style:none;margin:0;padding:0 0 0 2px;position:relative;display:flex;flex-direction:column;gap:8px;font:10.5px/1.45 ui-monospace,SFMono-Regular,monospace;color:#8f97a3}
+.jarvis .j-trace-steps:before{content:"";position:absolute;left:4.5px;top:6px;bottom:6px;width:1px;background:linear-gradient(#ffffff26,#ffffff0d)}
+.jarvis .j-trace-steps li{position:relative;display:flex;align-items:baseline;gap:10px;padding-left:16px;animation:j-step-in .25s ease-out}
+.jarvis .j-trace-steps li:before{content:"";position:absolute;left:2px;top:5px;width:6px;height:6px;border-radius:50%;background:#5d6470;box-shadow:0 0 0 2px #14151a}
+.jarvis .j-trace-steps li span{flex:1;min-width:0}
+.jarvis .j-trace-steps li time{color:#6b727d;font-variant-numeric:tabular-nums}
+.jarvis .j-trace-steps li.now{color:#e3e7ee}
+.jarvis .j-trace-steps li.now:before{background:#d4ae70;animation:j-active-pulse 1.4s infinite}
+.jarvis .j-model-pill{margin-left:auto;margin-right:8px;padding:4px 10px;border-radius:99px;background:#ffffff0d;box-shadow:inset 0 0 0 1px #ffffff14;font:500 11px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#c9cfd8;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.jarvis .j-trace-steps li,.jarvis .j-trace-steps li.now:before{animation:none}}
