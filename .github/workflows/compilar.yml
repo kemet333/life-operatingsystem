@@ -7,6 +7,8 @@ on:
     tags: ['v*']
 permissions:
   contents: write
+env:
+  PYTHONUTF8: '1'
 jobs:
   probar:
     strategy:

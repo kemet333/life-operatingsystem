@@ -525,6 +525,7 @@ echo '{"type":"rate_limit_event","rate_limit_info":{"unifiedWindows":{"five_hour
 echo '{"type":"result","result":"Claude hecho","total_cost_usd":0.01,"usage":{"output_tokens":3}}'
 """
 
+@unittest.skipIf(os.name == 'nt', 'usa programas falsos de shell, que Windows no ejecuta')
 class Codex(unittest.TestCase):
     """From 10/10 Codex builds first attempts by difficulty; Claude reviews, takes second attempts and covers outages."""
     def setUp(self):
@@ -780,6 +781,7 @@ echo '{"type":"result","result":"Claude hecho","total_cost_usd":0.01,"usage":{"o
 """
 NET_DOWN = "API Error: Can't reach the API server (ENOTFOUND)"
 
+@unittest.skipIf(os.name == 'nt', 'usa programas falsos de shell, que Windows no ejecuta')
 class NetworkRetry(unittest.TestCase):
     """A network error from Claude Code is retried with a wait; any other error stops at once."""
     def setUp(self):
@@ -1879,10 +1881,9 @@ class LaunchNotice(unittest.TestCase):
 
     def test_telegram_sends_buttons_only_when_given(self):
         link = {'chatId': 42}
-        token = mock.Mock(returncode=0, stdout='123456:abcdefghijklmnopqrstuvwxyz')
         response = mock.Mock()
         with mock.patch.object(equipo, 'load', return_value=link), \
-             mock.patch.object(equipo.subprocess, 'run', return_value=token), \
+             mock.patch.object(equipo.pf, 'secret', return_value='123456:abcdefghijklmnopqrstuvwxyz'), \
              mock.patch('urllib.request.urlopen', return_value=response) as urlopen:
             equipo.telegram('Con botón', [[{'text': 'Lanzado', 'callback_data': 'l:t_lanza'}]])
             equipo.telegram('Sin botón')
@@ -3415,6 +3416,7 @@ class Asleep(unittest.TestCase):
         self.assertFalse(self.run_tests([0, 3], 1)[0]['ok'])
         self.assertTrue(self.run_tests([0, 900], 0)[0]['ok'])                     # slept but passed: nothing to undo
 
+    @unittest.skipUnless(sys.platform == 'darwin', 'la tapa solo se mira en macOS')
     def test_no_new_work_with_the_lid_closed_unless_a_display_keeps_it_awake(self):
         def lid(closed, sleeps):
             out = f'  "AppleClamshellCausesSleep" = {sleeps}\n  "AppleClamshellState" = {closed}\n'

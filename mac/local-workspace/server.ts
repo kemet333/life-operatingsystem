@@ -30,7 +30,7 @@ let origin='',closing=false,bridge:any=null,bridgeState='starting',lastSnapshot=
 // The agent team engine (configuracion.json → equipo); the app only reads its status and relays the owner's explicit
 // decisions (approve the batch, pause, resume, plan now). Not configured → the team views say it is not installed.
 const EQUIPO_PY=configurar.python(),EQUIPO=configurar.motor();
-function equipo(args:string[],timeout=60000){return new Promise<string>((resolve,reject)=>{const p=spawn(EQUIPO_PY,[EQUIPO,...args],{stdio:['ignore','pipe','ignore']});let out='';const t=setTimeout(()=>{p.kill();reject(Error('El equipo no responde.'));},timeout);p.stdout.on('data',d=>out+=d);p.on('error',e=>{clearTimeout(t);reject(e);});p.on('close',code=>{clearTimeout(t);code===0?resolve(out):reject(Error('El equipo ha devuelto un error.'));});});}
+function equipo(args:string[],timeout=60000){return new Promise<string>((resolve,reject)=>{const p=spawn(EQUIPO_PY,[EQUIPO,...args],{stdio:['ignore','pipe','ignore'],env:{...process.env,PYTHONUTF8:'1'},windowsHide:true});let out='';const t=setTimeout(()=>{p.kill();reject(Error('El equipo no responde.'));},timeout);p.stdout.on('data',d=>out+=d);p.on('error',e=>{clearTimeout(t);reject(e);});p.on('close',code=>{clearTimeout(t);code===0?resolve(out):reject(Error('El equipo ha devuelto un error.'));});});}
 let queue=Promise.resolve();
 function serial<T>(fn:()=>Promise<T>):Promise<T>{const run=queue.then(fn);queue=run.then(()=>{},()=>{});return run;}
 function equal(a:unknown,b:string){if(typeof a!=='string')return false;const left=Buffer.from(a),right=Buffer.from(b);return left.length===right.length&&timingSafeEqual(left,right);}
@@ -67,7 +67,7 @@ const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url||'/',origin);
   const isBridge=url.pathname==='/api/bridge';
   if(isBridge){if(!equal(req.headers.authorization,'Bearer '+bridgeToken))return send(res,401,{error:'Puente no autorizado.'});if(req.method!=='POST')return send(res,405,{error:'Método no permitido.'});const m=await body(req);return send(res,200,await serial(()=>bridgeCall(m)));}
-  if(req.method==='GET'&&url.pathname==='/'&&equal(req.headers['X-Life-Launch'],launchToken))res.setHeader('Set-Cookie',`life_local=${session}; HttpOnly; SameSite=Strict; Path=/`);
+  if(req.method==='GET'&&url.pathname==='/'&&equal(req.headers['x-life-launch'],launchToken))res.setHeader('Set-Cookie',`life_local=${session}; HttpOnly; SameSite=Strict; Path=/`);
   else if(!authenticated(req))return send(res,401,{error:'Abre este espacio desde la app.'});
   if(url.pathname==='/api/perfil'&&req.method==='GET')return send(res,200,profile.publicView());
   if(url.pathname==='/api/vault'&&req.method==='GET'){const f=await cartera.folder(url.searchParams.get('dir')||'');return f?send(res,200,f):send(res,404,{error:'Carpeta no disponible.'});}
@@ -149,8 +149,8 @@ const server=http.createServer(async(req,res)=>{
    else if(input.action==='pause'||input.action==='resume')await equipo([input.action]);
    else if(input.action==='mensaje'){const para=String(input.para||'alfred'),texto=typeof input.texto==='string'?input.texto.trim().slice(0,1200):'';if(!['alfred','radar','product','studio','business','control','todos'].includes(para)||!texto)return send(res,400,{error:'Escribe el mensaje y elige a quién.'});const re_=typeof input.responde_a==='string'&&/^M\d{1,6}$/.test(input.responde_a)?['--responde-a',input.responde_a]:[];await equipo(['mensaje',para,'--texto',texto,...re_]);}
    else if(input.action==='decidir'&&project&&input.indice!==undefined){const n=Number(input.indice),d=String(input.decision||'');if(!Number.isInteger(n)||n<0||n>99||!['si','no','luego'].includes(d))return send(res,400,{error:'Decisión no válida.'});await equipo(['decidir',project,'--indice',String(n),'--decision',d]);}
-   else if(input.action==='fusionar'&&project){spawn(EQUIPO_PY,[EQUIPO,'fusionar',project],{stdio:'ignore',detached:true}).unref();}   // tests first; the result arrives by Telegram
-   else if(input.action==='plan'){spawn(EQUIPO_PY,[EQUIPO,'plan',...(project?[project]:[])],{stdio:'ignore',detached:true}).unref();}
+   else if(input.action==='fusionar'&&project){spawn(EQUIPO_PY,[EQUIPO,'fusionar',project],{stdio:'ignore',detached:true,env:{...process.env,PYTHONUTF8:'1'},windowsHide:true}).unref();}   // tests first; the result arrives by Telegram
+   else if(input.action==='plan'){spawn(EQUIPO_PY,[EQUIPO,'plan',...(project?[project]:[])],{stdio:'ignore',detached:true,env:{...process.env,PYTHONUTF8:'1'},windowsHide:true}).unref();}
    else if(input.action==='lanzado'||input.action==='resultado'||input.action==='descartar'||input.action==='decidir'){const r=experimentoArgs(input);if('error' in r)return send(res,400,{error:r.error});await equipo(r.args);}
    else return send(res,400,{error:'Acción del equipo no válida.'});
    return send(res,200,JSON.parse(await equipo(['status'])));

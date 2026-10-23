@@ -18,7 +18,7 @@ const WIN=process.platform==='win32';
 export const REINICIAR=75;
 
 function run(bin:string,args:string[],timeout=20000,cwd?:string){
- return new Promise<{code:number,out:string}>(resolve=>execFile(bin,args,{timeout,cwd,windowsHide:true,maxBuffer:4<<20},(e:any,stdout)=>resolve({code:e?(typeof e.code==='number'?e.code:1):0,out:String(stdout||'')})));
+ return new Promise<{code:number,out:string}>(resolve=>execFile(bin,args,{timeout,cwd,windowsHide:true,maxBuffer:4<<20,env:{...process.env,PYTHONUTF8:'1'}},(e:any,stdout)=>resolve({code:e?(typeof e.code==='number'?e.code:1):0,out:String(stdout||'')})));
 }
 
 // ---------- Claude ----------

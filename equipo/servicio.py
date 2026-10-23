@@ -51,7 +51,7 @@ def windows(install):
         name = f'{PREFIX}\\{job}'
         subprocess.run(['schtasks', '/Delete', '/F', '/TN', name], capture_output=True)
         if not install: continue
-        action = f'"{python()}" "{Path(__file__).resolve()}" lanzar {job}'
+        action = f'"{python()}" -X utf8 "{Path(__file__).resolve()}" lanzar {job}'   # UTF-8 files, not the Windows code page
         when_args = ['/SC', 'DAILY', '/ST', f'{when[0]:02d}:{when[1]:02d}'] if when else ['/SC', 'MINUTE', '/MO', '5']
         subprocess.run(['schtasks', '/Create', '/F', '/TN', name, '/TR', action, *when_args], check=True, capture_output=True)
 

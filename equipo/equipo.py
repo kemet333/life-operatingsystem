@@ -13,7 +13,7 @@ import argparse, concurrent.futures, hashlib, json, os, re, shutil, signal, sock
 from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import datetime, timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from statistics import median
 from zoneinfo import ZoneInfo
 
@@ -550,7 +550,10 @@ Sirve para elegir el modelo: no la infles.
 """
 
 def safe_rel(path):
-    p = Path(path)
+    # Repository paths are POSIX-style everywhere: on Windows '/etc/passwd' or 'C:\\x' must not pass as relative either.
+    text = str(path).replace('\\', '/')
+    if re.match(r'^[A-Za-z]:', text): return False
+    p = PurePosixPath(text)
     return bool(p.parts) and not p.is_absolute() and '..' not in p.parts and not any(
         part in {'.git', '.env', '.claude', '.codex', 'node_modules', 'CLAUDE.md', 'AGENTS.md'} or part.startswith('.env.') for part in p.parts)
 
