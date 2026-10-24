@@ -68,6 +68,7 @@ export default function Alfred(){
  const nodes=useMemo(()=>constellation(office,compact,department),[office,compact,department]);
  const perfil=usePerfil(),who=llamar(perfil);
  const marca=perfil.nombre?perfil.nombre.split(' ')[0]:'Life';   // «the owner Operating System» on its owner's Mac, from the profile
+ useEffect(()=>{document.title=`${marca} Operating System`;},[marca]);   // the window title (taskbar, Window menu) says it too
  const teamNodes=useMemo(()=>nodes.filter(n=>n.kind!=='project'),[nodes]);
  const parents=useMemo(()=>new Set(teamNodes.map(n=>n.parent)),[teamNodes]);
  const snap=office?.snapshot,fresh=!!snap&&Date.now()-new Date(snap.observedAt).getTime()<90000;

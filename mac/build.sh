@@ -53,7 +53,18 @@ xcrun swiftc -swift-version 5 -O -target arm64-apple-macosx15.0 -sdk "$sdk_dir" 
   "$source_dir/CalendarHelper.swift" -framework EventKit -o "$app_dir/Contents/MacOS/alfred-calendario"
 xcrun swiftc -swift-version 5 -O -sdk "$sdk_dir" -module-cache-path "$build_dir/modules" \
   "$source_dir/BuildIcon.swift" -framework AppKit -o "$build_dir/build-icon"
-"$build_dir/build-icon" "$build_dir/AppIcon.iconset" "$app_dir/Contents/Resources/AppIcon.icns"
+# The desktop app's icon (escritorio/icono.png) is the owner's choice for both apps; without it, the drawn one.
+icon_png="$project_dir/../escritorio/icono.png"
+if [ -f "$icon_png" ]; then
+  rm -rf "$build_dir/AppIcon.iconset" && mkdir -p "$build_dir/AppIcon.iconset"
+  for size in 16 32 128 256 512; do
+    sips -z $size $size "$icon_png" --out "$build_dir/AppIcon.iconset/icon_${size}x${size}.png" >/dev/null
+    sips -z $((size * 2)) $((size * 2)) "$icon_png" --out "$build_dir/AppIcon.iconset/icon_${size}x${size}@2x.png" >/dev/null
+  done
+  iconutil -c icns "$build_dir/AppIcon.iconset" -o "$app_dir/Contents/Resources/AppIcon.icns"
+else
+  "$build_dir/build-icon" "$build_dir/AppIcon.iconset" "$app_dir/Contents/Resources/AppIcon.icns"
+fi
 cp "$project_dir/Resources/Info.plist" "$app_dir/Contents/Info.plist"
 xattr -cr "$app_dir"
 # The owner's local certificate, when it exists, keeps one identity across builds: macOS then remembers the

@@ -1,7 +1,7 @@
 {
   "name": "escritorio",
-  "productName": "life.operatingsystem",
-  "version": "0.6.0",
+  "productName": "Life Operating System",
+  "version": "0.6.1",
   "description": "Alfred y su equipo de agentes, en tu ordenador.",
   "main": "main.mjs",
   "private": true,
@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.lifeoperatingsystem.app.escritorio",
-    "productName": "life.operatingsystem",
+    "productName": "Life Operating System",
     "files": [
       "main.mjs",
       "preload.cjs",
@@ -68,10 +68,10 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-Windows.${ext}"
+      "artifactName": "life.operatingsystem-Windows.${ext}"
     },
     "dmg": {
-      "artifactName": "${productName}-Mac.${ext}"
+      "artifactName": "life.operatingsystem-Mac.${ext}"
     }
   }
 }
