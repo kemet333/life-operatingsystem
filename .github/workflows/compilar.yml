@@ -12,6 +12,14 @@ on:
         description: 'Test the current UI over the published installer (does not publish a release)'
         type: boolean
         default: false
+      windows_release:
+        description: 'Published release to inspect on Windows'
+        type: string
+        default: 'v0.6.1'
+      windows_installer_sha256:
+        description: 'Expected SHA256 of that published Windows installer'
+        type: string
+        default: '346bba0ea0544694de2f8cf91b7e61ed456252cc606265383195d1fb95a9e53c'
   push:
     tags: ['v*']
 permissions:
@@ -104,6 +112,8 @@ jobs:
         shell: pwsh
         env:
           LIFE_OS_CANDIDATE_UI: ${{ inputs.windows_candidate_ui && '1' || '0' }}
+          LIFE_OS_TEST_RELEASE: ${{ inputs.windows_release }}
+          LIFE_OS_TEST_INSTALLER_SHA256: ${{ inputs.windows_installer_sha256 }}
         run: ./escritorio/pruebas/windows-startup.ps1
       - uses: actions/upload-artifact@v4
         if: always()

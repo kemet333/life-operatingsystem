@@ -2,10 +2,12 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $proof = Join-Path $PWD 'startup-proof'
 New-Item -ItemType Directory -Force $proof | Out-Null
-$installer = Join-Path $env:RUNNER_TEMP 'life-Windows-v0.6.1.exe'
+$release = if ($env:LIFE_OS_TEST_RELEASE) { $env:LIFE_OS_TEST_RELEASE } else { 'v0.6.1' }
+$expected = if ($env:LIFE_OS_TEST_INSTALLER_SHA256) { $env:LIFE_OS_TEST_INSTALLER_SHA256 } else { '346bba0ea0544694de2f8cf91b7e61ed456252cc606265383195d1fb95a9e53c' }
+if ($release -notmatch '^v\d+\.\d+\.\d+$' -or $expected -notmatch '^[a-fA-F0-9]{64}$') { throw 'Expected a release version and an installer SHA256' }
+$installer = Join-Path $env:RUNNER_TEMP "life-Windows-$release.exe"
 $install = Join-Path $env:RUNNER_TEMP 'life-startup-install'
 $data = Join-Path $env:RUNNER_TEMP 'life-startup-data'
-$expected = '346bba0ea0544694de2f8cf91b7e61ed456252cc606265383195d1fb95a9e53c'
 $socket = $null
 
 function Cdp($method, $params) {
@@ -28,7 +30,7 @@ function Cdp($method, $params) {
 }
 
 try {
-  Invoke-WebRequest 'https://github.com/kemet333/life-operatingsystem/releases/download/v0.6.1/life.operatingsystem-Windows.exe' -OutFile $installer
+  Invoke-WebRequest "https://github.com/kemet333/life-operatingsystem/releases/download/$release/life.operatingsystem-Windows.exe" -OutFile $installer
   $actual = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
   if ($actual -ne $expected) { throw 'Published installer hash mismatch' }
   $setup = Start-Process $installer -ArgumentList "/S /D=$install" -PassThru
@@ -55,18 +57,18 @@ try {
   $socket = [Net.WebSockets.ClientWebSocket]::new()
   $socket.ConnectAsync([Uri]$target.webSocketDebuggerUrl, [Threading.CancellationToken]::None).GetAwaiter().GetResult() | Out-Null
   do {
-    $result = Cdp 'Runtime.evaluate' @{expression='JSON.stringify({title:document.title,text:document.body.innerText,url:location.href})';returnByValue=$true}
+    $result = Cdp 'Runtime.evaluate' @{expression='JSON.stringify({title:document.title,text:document.body.innerText,url:location.href,onboarding:[...document.querySelectorAll("h1")].some(h=>h.innerText==="¿Cómo te llamas?")&&!!document.querySelector("input[placeholder=Ana]")})';returnByValue=$true}
     $page = $result.result.value | ConvertFrom-Json
-    if ($page.text -notmatch 'nombre|name') { Start-Sleep -Seconds 1 }
-  } until ($page.text -match 'nombre|name' -or (Get-Date) -gt $deadline)
+    if (!$page.onboarding) { Start-Sleep -Seconds 1 }
+  } until ($page.onboarding -or (Get-Date) -gt $deadline)
   $shot = Cdp 'Page.captureScreenshot' @{format='png'}
   [IO.File]::WriteAllBytes((Join-Path $proof 'onboarding.png'), [Convert]::FromBase64String($shot.data))
   $page | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $proof 'page.json')
   # Export schema/status only: never write the authenticated office response or its values.
   $office = Cdp 'Runtime.evaluate' @{expression='fetch("/api/office").then(async r=>{const d=await r.json();return JSON.stringify({status:r.status,entriesArray:Array.isArray(d.entries),settingsType:typeof d.settings,focusType:typeof d.settings?.focus,energyType:typeof d.settings?.energy})})';returnByValue=$true;awaitPromise=$true}
   $office.result.value | Set-Content (Join-Path $proof 'office-schema.json')
-  if ($page.text -notmatch 'nombre|name') { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
-  @{release='v0.6.1';installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;candidateUi=($env:LIFE_OS_CANDIDATE_UI -eq '1');os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
+  if (!$page.onboarding) { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
+  @{release=$release;installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;candidateUi=($env:LIFE_OS_CANDIDATE_UI -eq '1');os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
   Write-Host 'Published Windows installer reached first-launch onboarding. No AI login or external message.'
 } finally {
   if ($socket) { $socket.Dispose() }
