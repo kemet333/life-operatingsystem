@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 $proof = Join-Path $PWD 'startup-proof'
 New-Item -ItemType Directory -Force $proof | Out-Null
 $installer = Join-Path $env:RUNNER_TEMP 'life-Windows-v0.6.1.exe'
@@ -53,9 +54,10 @@ try {
     $page = $result.result.value | ConvertFrom-Json
     if ($page.text -notmatch 'nombre|name') { Start-Sleep -Seconds 1 }
   } until ($page.text -match 'nombre|name' -or (Get-Date) -gt $deadline)
-  if ($page.text -notmatch 'nombre|name') { throw 'Fresh onboarding name screen was not reached' }
   $shot = Cdp 'Page.captureScreenshot' @{format='png'}
   [IO.File]::WriteAllBytes((Join-Path $proof 'onboarding.png'), [Convert]::FromBase64String($shot.data))
+  $page | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $proof 'page.json')
+  if ($page.text -notmatch 'nombre|name') { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
   @{release='v0.6.1';installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
   Write-Host 'Published Windows installer reached first-launch onboarding. No AI login or external message.'
 } finally {
