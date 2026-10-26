@@ -3,6 +3,23 @@
 name: compilar
 on:
   workflow_dispatch:
+    inputs:
+      windows_startup_only:
+        description: 'Install v0.6.1 and check Windows onboarding without AI login'
+        type: boolean
+        default: false
+      windows_candidate_ui:
+        description: 'Test the current UI over the published installer (does not publish a release)'
+        type: boolean
+        default: false
+      windows_release:
+        description: 'Published release to inspect on Windows'
+        type: string
+        default: 'v0.6.1'
+      windows_installer_sha256:
+        description: 'Expected SHA256 of that published Windows installer'
+        type: string
+        default: '346bba0ea0544694de2f8cf91b7e61ed456252cc606265383195d1fb95a9e53c'
   push:
     tags: ['v*']
 permissions:
@@ -11,6 +28,7 @@ env:
   PYTHONUTF8: '1'
 jobs:
   probar:
+    if: ${{ !inputs.windows_startup_only }}
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +57,7 @@ jobs:
           node build-server.mjs
           fail=0; for c in runtime telegram cartera contenido voice; do node $c-checks.mjs || fail=1; done; exit $fail
   instaladores:
+    if: ${{ !inputs.windows_startup_only }}
     needs: probar
     strategy:
       matrix:
@@ -70,3 +89,34 @@ jobs:
           files: |
             escritorio/dist/*.dmg
             escritorio/dist/*.exe
+  arranque_windows:
+    if: ${{ inputs.windows_startup_only }}
+    runs-on: windows-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.windows_candidate_ui }}
+        with: {node-version: '26.8.1'}
+      - name: Build candidate interface
+        if: ${{ inputs.windows_candidate_ui }}
+        shell: pwsh
+        run: |
+          npm ci --no-audit --no-fund --prefix alfred-os
+          node alfred-os/node_modules/vite/bin/vite.js build --config mac/local-workspace/vite.config.ts
+      - name: Install published release and inspect onboarding
+        shell: pwsh
+        env:
+          LIFE_OS_CANDIDATE_UI: ${{ inputs.windows_candidate_ui && '1' || '0' }}
+          LIFE_OS_TEST_RELEASE: ${{ inputs.windows_release }}
+          LIFE_OS_TEST_INSTALLER_SHA256: ${{ inputs.windows_installer_sha256 }}
+        run: ./escritorio/pruebas/windows-startup.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-startup-proof
+          path: startup-proof/

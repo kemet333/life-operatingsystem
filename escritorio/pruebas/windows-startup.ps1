@@ -1,0 +1,76 @@
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+$proof = Join-Path $PWD 'startup-proof'
+New-Item -ItemType Directory -Force $proof | Out-Null
+$release = if ($env:LIFE_OS_TEST_RELEASE) { $env:LIFE_OS_TEST_RELEASE } else { 'v0.6.1' }
+$expected = if ($env:LIFE_OS_TEST_INSTALLER_SHA256) { $env:LIFE_OS_TEST_INSTALLER_SHA256 } else { '346bba0ea0544694de2f8cf91b7e61ed456252cc606265383195d1fb95a9e53c' }
+if ($release -notmatch '^v\d+\.\d+\.\d+$' -or $expected -notmatch '^[a-fA-F0-9]{64}$') { throw 'Expected a release version and an installer SHA256' }
+$installer = Join-Path $env:RUNNER_TEMP "life-Windows-$release.exe"
+$install = Join-Path $env:RUNNER_TEMP 'life-startup-install'
+$data = Join-Path $env:RUNNER_TEMP 'life-startup-data'
+$socket = $null
+
+function Cdp($method, $params) {
+  $request = @{id=1;method=$method;params=$params} | ConvertTo-Json -Depth 12 -Compress
+  $bytes = [Text.Encoding]::UTF8.GetBytes($request)
+  $socket.SendAsync([ArraySegment[byte]]::new($bytes), [Net.WebSockets.WebSocketMessageType]::Text, $true, [Threading.CancellationToken]::None).GetAwaiter().GetResult() | Out-Null
+  do {
+    $stream = [IO.MemoryStream]::new()
+    do {
+      $buffer = [byte[]]::new(65536)
+      $frame = $socket.ReceiveAsync([ArraySegment[byte]]::new($buffer), [Threading.CancellationToken]::None).GetAwaiter().GetResult()
+      if ($frame.MessageType -eq [Net.WebSockets.WebSocketMessageType]::Close) { throw 'Debugger closed before verification' }
+      $stream.Write($buffer, 0, $frame.Count)
+    } until ($frame.EndOfMessage)
+    $reply = [Text.Encoding]::UTF8.GetString($stream.ToArray()) | ConvertFrom-Json
+    $stream.Dispose()
+  } until ($reply.id -eq 1)
+  if ($reply.error) { throw "CDP failed: $($reply.error.message)" }
+  return $reply.result
+}
+
+try {
+  Invoke-WebRequest "https://github.com/kemet333/life-operatingsystem/releases/download/$release/life.operatingsystem-Windows.exe" -OutFile $installer
+  $actual = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+  if ($actual -ne $expected) { throw 'Published installer hash mismatch' }
+  $setup = Start-Process $installer -ArgumentList "/S /D=$install" -PassThru
+  if (!$setup.WaitForExit(120000)) { throw 'Installer timed out' }
+  if ($setup.ExitCode -ne 0) { throw "Installer exit $($setup.ExitCode)" }
+  $exe = Join-Path $install 'Life Operating System.exe'
+  if (!(Test-Path $exe)) { throw 'Installed executable not found' }
+  # Only stop processes created inside this test's installation, if NSIS launched it automatically.
+  Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($install) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  if ($env:LIFE_OS_CANDIDATE_UI -eq '1') {
+    $candidate = Join-Path $PWD 'mac/local-workspace/dist/client'
+    if (!(Test-Path (Join-Path $candidate 'index.html'))) { throw 'Candidate interface missing' }
+    Copy-Item (Join-Path $candidate '*') (Join-Path $install 'resources/workspace/client') -Recurse -Force
+  }
+  $env:LIFE_OS_DATA_DIR = $data
+  Start-Process $exe -ArgumentList '--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --force-renderer-accessibility' | Out-Null
+  $deadline = (Get-Date).AddSeconds(90)
+  $target = $null
+  do {
+    try { $target = Invoke-RestMethod 'http://127.0.0.1:9222/json' | Where-Object { $_.type -eq 'page' -and $_.url -like 'http://127.0.0.1:*' } | Select-Object -First 1 } catch {}
+    if (!$target) { Start-Sleep -Seconds 1 }
+  } until ($target -or (Get-Date) -gt $deadline)
+  if (!$target) { throw 'Desktop did not open its authenticated local page' }
+  $socket = [Net.WebSockets.ClientWebSocket]::new()
+  $socket.ConnectAsync([Uri]$target.webSocketDebuggerUrl, [Threading.CancellationToken]::None).GetAwaiter().GetResult() | Out-Null
+  do {
+    $result = Cdp 'Runtime.evaluate' @{expression='JSON.stringify({title:document.title,text:document.body.innerText,url:location.href,onboarding:[...document.querySelectorAll("h1")].some(h=>h.innerText==="¿Cómo te llamas?")&&!!document.querySelector("input[placeholder=Ana]")})';returnByValue=$true}
+    $page = $result.result.value | ConvertFrom-Json
+    if (!$page.onboarding) { Start-Sleep -Seconds 1 }
+  } until ($page.onboarding -or (Get-Date) -gt $deadline)
+  $shot = Cdp 'Page.captureScreenshot' @{format='png'}
+  [IO.File]::WriteAllBytes((Join-Path $proof 'onboarding.png'), [Convert]::FromBase64String($shot.data))
+  $page | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $proof 'page.json')
+  # Export schema/status only: never write the authenticated office response or its values.
+  $office = Cdp 'Runtime.evaluate' @{expression='fetch("/api/office").then(async r=>{const d=await r.json();return JSON.stringify({status:r.status,entriesArray:Array.isArray(d.entries),settingsType:typeof d.settings,focusType:typeof d.settings?.focus,energyType:typeof d.settings?.energy})})';returnByValue=$true;awaitPromise=$true}
+  $office.result.value | Set-Content (Join-Path $proof 'office-schema.json')
+  if (!$page.onboarding) { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
+  @{release=$release;installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;candidateUi=($env:LIFE_OS_CANDIDATE_UI -eq '1');os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
+  Write-Host 'Published Windows installer reached first-launch onboarding. No AI login or external message.'
+} finally {
+  if ($socket) { $socket.Dispose() }
+  Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($install) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+}

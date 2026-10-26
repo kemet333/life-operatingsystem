@@ -74,7 +74,7 @@ export default function Alfred(){
  const snap=office?.snapshot,fresh=!!snap&&Date.now()-new Date(snap.observedAt).getTime()<90000;
  const activeId=snap?.bridge?.activeRequest,active=(office?.entries||[]).find(e=>e.id===activeId&&['dispatching','linked'].includes(e.status));
  const mode:OrbMode=voiceMode!=='idle'?voiceMode:thinking||active&&fresh?'thinking':'idle';
- const focus=projects.find(p=>p.id===office?.settings.focus)||projects.find(p=>p.id==='tf')!;
+ const focus=projects.find(p=>p.id===office?.settings.focus)||projects[0];
  const requests=(office?.entries||[]).filter(e=>e.kind==='request'),ideas=(office?.entries||[]).filter(e=>e.kind==='idea'&&!['parked','cancelled'].includes(e.status)),waiting=(office?.entries||[]).filter(e=>e.kind==='conversation'&&['queued','dispatching','linked'].includes(e.status));
  const ready=requests.filter(e=>e.status==='review'),currentDepartment=departments.find(d=>d.id===department);
  const equipo=useEquipo(),board:any[]=(equipo as any)?.tablero||[];
