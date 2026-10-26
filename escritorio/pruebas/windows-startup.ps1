@@ -38,6 +38,11 @@ try {
   if (!(Test-Path $exe)) { throw 'Installed executable not found' }
   # Only stop processes created inside this test's installation, if NSIS launched it automatically.
   Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($install) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  if ($env:LIFE_OS_CANDIDATE_UI -eq '1') {
+    $candidate = Join-Path $PWD 'mac/local-workspace/dist/client'
+    if (!(Test-Path (Join-Path $candidate 'index.html'))) { throw 'Candidate interface missing' }
+    Copy-Item (Join-Path $candidate '*') (Join-Path $install 'resources/workspace/client') -Recurse -Force
+  }
   $env:LIFE_OS_DATA_DIR = $data
   Start-Process $exe -ArgumentList '--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --force-renderer-accessibility' | Out-Null
   $deadline = (Get-Date).AddSeconds(90)
@@ -61,7 +66,7 @@ try {
   $office = Cdp 'Runtime.evaluate' @{expression='fetch("/api/office").then(async r=>{const d=await r.json();return JSON.stringify({status:r.status,entriesArray:Array.isArray(d.entries),settingsType:typeof d.settings,focusType:typeof d.settings?.focus,energyType:typeof d.settings?.energy})})';returnByValue=$true;awaitPromise=$true}
   $office.result.value | Set-Content (Join-Path $proof 'office-schema.json')
   if ($page.text -notmatch 'nombre|name') { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
-  @{release='v0.6.1';installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
+  @{release='v0.6.1';installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;candidateUi=($env:LIFE_OS_CANDIDATE_UI -eq '1');os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
   Write-Host 'Published Windows installer reached first-launch onboarding. No AI login or external message.'
 } finally {
   if ($socket) { $socket.Dispose() }
