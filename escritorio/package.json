@@ -1,7 +1,7 @@
 {
   "name": "escritorio",
   "productName": "Life Operating System",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Alfred y su equipo de agentes, en tu ordenador.",
   "main": "main.mjs",
   "private": true,

@@ -1444,13 +1444,16 @@ class Tablero(unittest.TestCase):
 
     def test_launched_experiment_without_result_after_48_hours_returns_to_owner(self):
         ficha = {'que': 'Landing A/B', 'a_quien': 'Tráfico frío', 'metrica': 'Registros', 'umbral': '5 % de conversión'}
-        recent, old = equipo.time.time(), equipo.time.time() - 10 * 86400
+        # Fixed clock spans Madrid's autumn DST change. These are elapsed hours,
+        # not wall-clock subtraction (47 local hours can otherwise span 48 real ones).
+        at = datetime(2026, 10, 26, 12, tzinfo=equipo.MADRID)
+        recent, old = at.timestamp(), at.timestamp() - 10 * 86400
         def task(tid, completed_at):
             return {'id': tid, 'title': tid, 'status': 'done', 'created_at': 1790000000, 'completed_at': completed_at, 'body': json.dumps({'lanzamiento': ficha})}
         def fake_tasks(pid):
             return [task('t_sin_medir', recent), task('t_medida', recent), task('t_vieja', old), task('t_reciente', recent),
                     task('t_fecha_rota', recent), task('t_sin_fusionar', recent), task('t_fusionada', recent)] if pid == 'owner-os' else []
-        hace = lambda horas: (equipo.now() - timedelta(hours=horas)).isoformat()
+        hace = lambda horas: datetime.fromtimestamp(at.timestamp() - horas * 3600, equipo.MADRID).isoformat()
         registro = {'t_sin_medir': {'lanzado': hace(49)}, 't_medida': {'lanzado': hace(49)}, 't_vieja': {'lanzado': hace(49)},
                     't_reciente': {'lanzado': hace(47)}, 't_fecha_rota': {'lanzado': 'ayer por la tarde'}}
         with tempfile.TemporaryDirectory() as tmp:
@@ -1461,6 +1464,7 @@ class Tablero(unittest.TestCase):
                 (Path(tmp) / 'runs' / tid).mkdir(parents=True)
                 (Path(tmp) / 'runs' / tid / 'receipt.json').write_text(json.dumps({'commit': commit}))
             with mock.patch.object(equipo, 'STATE', Path(tmp)), mock.patch.object(equipo, 'tasks', fake_tasks), \
+                 mock.patch.object(equipo, 'now', lambda: at), mock.patch.object(equipo.time, 'time', lambda: at.timestamp()), \
                  mock.patch.object(equipo, 'merged', lambda repo, base, commit: commit == 'bbb222'), \
                  mock.patch.object(equipo, 'mesa_load', lambda: {'mensajes': []}), mock.patch.object(equipo, 'hermes_overview', lambda: {}):
                 items = {i['id']: i for i in equipo.tablero() if i['fuente'] == 'equipo'}
@@ -1520,15 +1524,15 @@ class Tablero(unittest.TestCase):
 
     def test_recent_measured_experiment_without_decision_returns_to_owner(self):
         ficha = {'que': 'Landing A/B', 'a_quien': 'Tráfico frío', 'metrica': 'Registros', 'umbral': '5 % de conversión'}
-        at = equipo.now()
-        recent, old = equipo.time.time(), equipo.time.time() - 10 * 86400
+        at = datetime(2026, 10, 26, 12, tzinfo=equipo.MADRID)
+        recent, old = at.timestamp(), at.timestamp() - 10 * 86400
         tids = ('t_reciente', 't_decidida', 't_antigua', 't_completada', 't_sin_hora', 't_hora_rota', 't_limite', 't_decision_previa')
         def task(tid):
             return {'id': tid, 'title': tid, 'status': 'done', 'created_at': 1790000000, 'completed_at': old if tid == 't_completada' else recent,
                     'body': json.dumps({'lanzamiento': ficha})}
         def fake_tasks(pid):
             return [task(tid) for tid in tids] if pid == 'owner-os' else []
-        hace = lambda dias: (at - timedelta(days=dias)).isoformat()
+        hace = lambda dias: datetime.fromtimestamp(at.timestamp() - dias * 86400, equipo.MADRID).isoformat()
         resultados = [{'tarea': tid, 'hora': hace(1)} for tid in tids]
         resultados[1]['decision'] = 'seguir'
         resultados[7]['decision'] = 'cambiar'
@@ -1540,6 +1544,7 @@ class Tablero(unittest.TestCase):
             (Path(tmp) / 'experimentos').mkdir()
             (Path(tmp) / 'experimentos' / 'owner-os.json').write_text(json.dumps(resultados))
             with mock.patch.object(equipo, 'STATE', Path(tmp)), mock.patch.object(equipo, 'tasks', fake_tasks), mock.patch.object(equipo, 'now', lambda: at), \
+                 mock.patch.object(equipo.time, 'time', lambda: at.timestamp()), \
                  mock.patch.object(equipo, 'mesa_load', lambda: {'mensajes': []}), mock.patch.object(equipo, 'hermes_overview', lambda: {}):
                 items = {i['id']: i for i in equipo.tablero() if i['fuente'] == 'equipo'}
         for tid in ('t_reciente', 't_completada', 't_limite'):
