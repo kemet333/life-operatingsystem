@@ -12,7 +12,6 @@ const families:Record<string,string[][]>={
  business:[['Oferta','Comprador','Necesidad','Piloto'],['Distribución','Canales','Afiliación','Conversión'],['Negocio','Costes','Margen','Siguiente prueba']],
  control:[['Revisión','Trazabilidad','Evidencia','Veredicto'],['Calidad','Criterios','Contradicciones','Correcciones'],['Alcance','Autorización','Límites','Aceptación']],
 };
-const ownership:Record<string,string[]>={alfred:['alfred','life'],radar:['atomic','phone','social-future'],product:['platform','journal','mmc'],studio:['aix','reels','academy'],business:['tf','ube','b2b','chusta'],control:[]};
 export function constellation(state:OfficeState|null,compact=false,focus?:string|null){
  const departments=getDepartments(compact,focus);
  const nodes:MapNode[]=[];
@@ -38,9 +37,12 @@ export function constellation(state:OfficeState|null,compact=false,focus?:string
     parent=id;
    });
   });
-  ownership[d.id].forEach((pid,j)=>{
-   const p=projects.find(p=>p.id===pid)!;const a=d.angle,r=150,offset=(j-(ownership[d.id].length-1)/2)*42;
-   const projectCount=ownership[d.id].length;
+  // A fresh or imported portfolio has its own IDs. Unassigned projects stay with
+  // coordination; an explicit valid team can place them under another department.
+  const owned=projects.filter(p=>(roles.some(r=>r.id===p.team)?p.team:'alfred')===d.id);
+  owned.forEach((p,j)=>{
+   const pid=p.id,a=d.angle,r=150,offset=(j-(owned.length-1)/2)*42;
+   const projectCount=owned.length;
    const x=focused?d.x+260:d.x+r*Math.cos(a)-offset*.28*Math.sin(a);
    const y=focused?d.y+(j-(projectCount-1)/2)*62:d.y+r*.55*Math.sin(a)+offset;
    nodes.push({id:'project-'+pid,name:p.name,x,y,parent:focused?d.id:d.id+'-group-'+j%3+'-1',role:d.id,kind:'project',description:p.next,data:p});

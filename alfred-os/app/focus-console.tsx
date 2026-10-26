@@ -8,7 +8,7 @@ import {useEquipo} from './equipo-panel';
 import {usePerfil,llamar} from './perfil';
 export default function FocusConsole({office,act,mode,level,chat,onProject,onCapture,onReview,embedded=false,onBack}:{office:any;act:(v:any)=>Promise<any>;mode:OrbMode;level:number;chat:()=>void;onProject:()=>void;onCapture:()=>void;onReview:()=>void;embedded?:boolean;onBack?:()=>void}){
  const who=llamar(usePerfil());
- const project=projects.find(p=>p.id===office?.settings.focus)||projects.find(p=>p.id==='tf')!;
+ const project=projects.find(p=>p.id===office?.settings.focus)||projects[0];
  const session:FocusSession|null=office?.focusSession||null,step=firstSteps[project.id],low=office?.settings.energy==='low';
  const [expanded,setExpanded]=useState(embedded);
  const equipo=useEquipo();
