@@ -3,6 +3,11 @@
 name: compilar
 on:
   workflow_dispatch:
+    inputs:
+      windows_startup_only:
+        description: 'Install v0.6.1 and check Windows onboarding without AI login'
+        type: boolean
+        default: false
   push:
     tags: ['v*']
 permissions:
@@ -11,6 +16,7 @@ env:
   PYTHONUTF8: '1'
 jobs:
   probar:
+    if: ${{ !inputs.windows_startup_only }}
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +45,7 @@ jobs:
           node build-server.mjs
           fail=0; for c in runtime telegram cartera contenido voice; do node $c-checks.mjs || fail=1; done; exit $fail
   instaladores:
+    if: ${{ !inputs.windows_startup_only }}
     needs: probar
     strategy:
       matrix:
@@ -70,3 +77,21 @@ jobs:
           files: |
             escritorio/dist/*.dmg
             escritorio/dist/*.exe
+  arranque_windows:
+    if: ${{ inputs.windows_startup_only }}
+    runs-on: windows-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install published release and inspect onboarding
+        shell: pwsh
+        run: ./escritorio/pruebas/windows-startup.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-startup-proof
+          path: startup-proof/
