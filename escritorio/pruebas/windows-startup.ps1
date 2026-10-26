@@ -57,6 +57,9 @@ try {
   $shot = Cdp 'Page.captureScreenshot' @{format='png'}
   [IO.File]::WriteAllBytes((Join-Path $proof 'onboarding.png'), [Convert]::FromBase64String($shot.data))
   $page | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $proof 'page.json')
+  # Export schema/status only: never write the authenticated office response or its values.
+  $office = Cdp 'Runtime.evaluate' @{expression='fetch("/api/office").then(async r=>{const d=await r.json();return JSON.stringify({status:r.status,entriesArray:Array.isArray(d.entries),settingsType:typeof d.settings,focusType:typeof d.settings?.focus,energyType:typeof d.settings?.energy})})';returnByValue=$true;awaitPromise=$true}
+  $office.result.value | Set-Content (Join-Path $proof 'office-schema.json')
   if ($page.text -notmatch 'nombre|name') { throw 'Fresh onboarding name screen was not reached; inspect page.json and onboarding.png' }
   @{release='v0.6.1';installerSha256=$actual;installed=$true;localPage=$true;onboarding=$true;aiLogin=$false;humanPilot=$false;os=[Environment]::OSVersion.VersionString;text=$page.text} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $proof 'result.json')
   Write-Host 'Published Windows installer reached first-launch onboarding. No AI login or external message.'
