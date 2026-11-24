@@ -1,3 +1,5 @@
+> **This project is now [Prompted OS](https://github.com/kemet333/prompted-os).** This repository is archived; new versions and downloads live there: [workwithprompted.com/os/open-source](https://www.workwithprompted.com/os/open-source/).
+
 # life.operatingsystem
 
 **You decide. Your agents do the rest.**
